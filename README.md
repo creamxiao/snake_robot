@@ -15,7 +15,7 @@ The following steps are extracted from [_qpOASES_ manual](https://www.coin-or.or
     cd <qpOASES-dir>
     make
 ```
-This library libqpOASES.a provides the complete functionality of the qpOASES software package. It can be used by, e.g., linking it against a main function from the examples folder. The make also compiles a couple of test examples; executables are stored within the directory `<install-dir>/bin`.
+This library libqpOASES.a provides the complete functionality of the qpOASES software package. It can be used by, e.g., linking it against a main function from the examples folder. The make also compiles a couple of test examples; executables are stored within the directory `<qpOASES-dir>/bin`.
 
 4. Running a simple test example:
 Among others, an executable called example1 should have been created; run it in order to test your installation:
