@@ -5,7 +5,7 @@ Prerequisites:
 ----------------------------------------
 _Linux_ environment, _OpenCV_ and _qpOASES_ libraries installed.
 ### OpenCV:
-If you already have your OpenCV installed on you computer, congratulations. Otherwise, skip to [OpenCV installation instructions](#opencv-quick-installation).
+If you already have your OpenCV installed on you computer, congratulations. Otherwise, skip to [OpenCV installation instructions](#opencv-quick-installation) and come back after you succeeded.
 
 ### qpOASES:
 _qpOASES_ download: [Click here](https://github.com/coin-or/qpOASES)
@@ -92,3 +92,4 @@ libopencv2.4-java
 libopencv2.5-jni
 opencv-data
 3. Click `apply`. Enjoy!
+[Go back to Prerequisites](#opencv)
