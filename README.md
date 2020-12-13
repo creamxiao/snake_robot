@@ -1,5 +1,5 @@
 # Snake-like robot bracing and passive supporting configuration search
-This program is for the configuration search of Paper "A Search-based Configuration and Motion Planning Algorithm for a Snake-like Robot Performing Load-intensive Operations".
+This program is only for the configuration search for Paper "A Search-based Configuration and Motion Planning Algorithm for a Snake-like Robot Performing Load-intensive Operations".
 
 Prerequisites:
 ----------------------------------------
