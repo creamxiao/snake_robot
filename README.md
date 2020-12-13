@@ -5,7 +5,7 @@ Prerequisites:
 ----------------------------------------
 _Linux_ environment, _OpenCV_ and _qpOASES_ libraries installed.
 
-If you already have OpenCV installed, congratulations. If you haven't installed OpenCV yet, skip to [OpenCV quick installation](https://github.com/subh83/DOSL#basic-usage) and come back after you succeed.
+If you already have OpenCV installed, congratulations. If you haven't installed OpenCV yet, skip to [OpenCV quick installation](https://github.com/creamxiao/snake_robot/blob/main/README.md#opencv-quick-installation) and come back after you succeed.
 
 _qpOASES_ download: [Click here](https://github.com/coin-or/qpOASES)
 
