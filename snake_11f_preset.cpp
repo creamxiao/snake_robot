@@ -288,6 +288,7 @@ if (map_name == "wall_simu_triangular.png" || map_name == "wall_simu_triangular_
 
   // imwrite(fileName, shortest_search.realtime_display);
   imshow("Display window", shortest_search.realtime_display);
+  cout << "Press any key to continue" << endl;
   cvWaitKey();
   destroyWindow("Display window");
 }
@@ -340,6 +341,7 @@ int main(int argc, char *argv[])
     imwrite(imgFname, searchInstance_1.realtime_display);
 
     imshow("Display window", searchInstance_1.realtime_display);
+	  cout << "Press any key to exit" << endl;
     cvWaitKey();
     return 0;
   }
@@ -472,6 +474,7 @@ int main(int argc, char *argv[])
     imwrite(imgFname, searchInstance_2.realtime_display);
 
     imshow("Display window", searchInstance_2.realtime_display);
+	  cout << "Press any key to continue" << endl;
     cvWaitKey();
     return 0;
   }
@@ -617,6 +620,7 @@ int main(int argc, char *argv[])
   sprintf(imgFname, "outfiles/%s_%d_%d_%d_%d_%d_forPaper_%s.png", argv[0], 1900 + localtm->tm_year, 1 + localtm->tm_mon, localtm->tm_mday, localtm->tm_hour, localtm->tm_min, _OS_FLAG == 1? "Linux" : "Mac");
 	imwrite(regex_replace(regex_replace(imgFname, regex("\n"), ""), regex(":"), "_"), forpaper);
 	imshow("Display window", forpaper);
+	cout << "Press any key to continue" << endl;
   cvWaitKey();
 
   // ================================================================================================================
@@ -747,6 +751,7 @@ int main(int argc, char *argv[])
 	imwrite(regex_replace(regex_replace(imgFname, regex("\n"), ""), regex(":"), "_"), start_canvas);
   cout << "final configuration shown" << endl;
 	imshow("Feed in animation", start_canvas);
+	cout << "Press any key to continue" << endl;
 	cvWaitKey();
 	start_canvas.release();
 
@@ -883,7 +888,7 @@ int main(int argc, char *argv[])
 		if (robot.size() == alt_allLks.size()) arrived = true;
 	}
   controlfile.close();
-  cout << "All animation finished!" << endl;
+  cout << "All animation finished! Press any key to exit" << endl;
 	cvWaitKey();
 
 	return 0;
