@@ -1,8 +1,7 @@
-# Snake-like robot bracing and passive supporting configuration search
+# Snake-like robot bracing and passive supporting configuration search #
 This program is only for the configuration search for Paper "A Search-based Configuration and Motion Planning Algorithm for a Snake-like Robot Performing Load-intensive Operations".
 
-Prerequisites:
-----------------------------------------
+## Prerequisites: ##
 _Linux_ environment, _OpenCV_ and _qpOASES_ libraries installed.
 ### OpenCV:
 If you already have your _OpenCV_ installed on you computer, congratulations. Otherwise, skip to [OpenCV installation instructions](#opencv-quick-installation) and remember to come back after you succeeded.
@@ -26,14 +25,13 @@ Among others, an executable called example1 should have been created; run it in 
 ```
 If it terminates after successfully solving two QP problems, qpOASES has been successfully installed!
 
-Installation and Compilation of the program:
-----------------------------------------
-### Installation:
+## Installation and Compilation of the program: ##
+### Installation: ###
 Simply download the whole repository to your local directory. For user's convenience, the third party library [DOSL](https://github.com/subh83/DOSL) is included in this repository. Hereafter we refer to (the full path of) this directory by `<snake_robot-dir>`.
 
 You may need to change the `<snake_robot-dir>/makefile` for compilation. Depending on where you installed _qpOASES_ library. Change the line 35 `BINDIR = <qpOASES-dir>/bin` to your pqOASES installed directory, for example `BINDIR = /home/xiaolong/Documents/qpOASES-3.2.1/bin`.
 
-### Compilation:
+### Compilation: ###
 In terminal, go to the local folder where you put this repository 
 ```
     cd <snake_robot-dir>
@@ -43,16 +41,14 @@ compile by running
     make snake_11f_preset
 ```
 
-Run the program:
-----------------------------------------
+## Run the program: ##
 In the same folder, type in terminal
 ```
     ./snake_11f_preset
 ```
 No other input needed. During the process of the program, you may be notified to press any key to continue once some picture pops up. Move the focus onto the picutre window and press any key. The output will be in folder `<snake_robot-dir>/outfiles`.
 
-OpenCV quick installation:
-----------------------------------------
+## OpenCV quick installation: ##
 Since installing OpenCV merely in terminal is painful, hereafter we are going to install it in a much more convenient way.
 1. Open the Linux terminal, input and execute:
 ```
