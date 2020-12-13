@@ -1,20 +1,20 @@
 {  
 'path_plan_1':
-         {  map_name:  "wall_simu_3.png",
-            start:     [24, 40],
-            angle_s:   0.0,
-            goal:      [161, 111],
-            angle_g:   0.5,
-      PLOT_SCALE: 2,
-      VERTEX_SIZE: 2,
-      LINE_THICKNESS: 2
-        }
-'path_plan_2':
          {  map_name:  "wall_1.png",
             start:     [77, 218],
             angle_s:   1.0,
             goal:      [41, 29],
             angle_g:   1.75,
+      PLOT_SCALE: 2,
+      VERTEX_SIZE: 2,
+      LINE_THICKNESS: 2
+        }
+'path_plan_2':
+         {  map_name:  "wall_simu_3.png",
+            start:     [24, 40],
+            angle_s:   0.0,
+            goal:      [161, 111],
+            angle_g:   0.5,
       PLOT_SCALE: 2,
       VERTEX_SIZE: 2,
       LINE_THICKNESS: 2
