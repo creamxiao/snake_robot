@@ -4,9 +4,67 @@ This program is only for the configuration search for Paper "A Search-based Conf
 Prerequisites:
 ----------------------------------------
 _Linux_ environment, _OpenCV_ and _qpOASES_ libraries installed.
+### OpenCV:
+<details>
+    <summary>If you already have your OpenCV installed on you computer, congratulations. Otherwise, unfold this for OpenCV installation instructions</summary>
+    <p> ### OpenCV quick installation:
+Since installing OpenCV merely in terminal is painful, hereafter we are going to install it in a much more convenient way.
+1. Open the Linux terminal, input and execute:
+```
+    sudo apt-get install synaptic
+```
+2. After the package `synaptic` has been successfully installed, open `Synaptic Package Manager` in your system applications, search for: `opencv`
+3. Right click to mark the following items in search results for installation:
+       > libcv-dev
+libcv2.4
+libcvaux-dev
+libcvaux2.4
+libhighgui-dev
+libopencv-calib3d-dev
+ibopencv-calib3d2.4v5
+libopencv-contrib-dev
+libopencv-contrib2.4v5
+libopencv-core-dev
+libopencv-core2.4v5
+libopencv-dev
+libopencv-features2d-dev
+libopencv-features2d2.4v5
+libopencv-flann-dev
+libopencv-flann2.4v5
+libopencv-gpu-dev
+libopencv-gpu2.4v5
+libopencv-highgui-dev
+libopencv-highgui2.4-deb0
+libopencv-imgproc-dev
+libopencv-imgproc2.4v5
+libopencv-legacy-dev
+libopencv-legacy2.4v5
+libopencv-ml-dev
+libopencv-ml2.4v5
+libopencv-objdetect-dev
+libopencv-objdetect2.4v5
+libopencv-ocl-dev
+libopencv-ocl2.4v5
+libopencv-photo-dev
+libopencv-photo2.4v5
+libopencv-stitching-dev
+libopencv-stitching2.4v5
+libopencv-superres-dev
+libopencv-superres2.4v5
+libopencv-ts-dev
+libopencv-ts2.4v5
+libopencv-video-dev
+libopencv-video2.4v5
+libopencv-videostab-dev
+libopencv-videostab2.4v5
+libopencv2.4-java
+libopencv2.5-jni
+opencv-data
+3. Click `apply`. Enjoy!
+    </p>
+</details>
 
-If you already have OpenCV installed, congratulations. If you haven't installed OpenCV yet, skip to [OpenCV quick installation](https://github.com/creamxiao/snake_robot/blob/main/README.md#opencv-quick-installation) and come back after you succeed.
-
+### qpOASES:
 _qpOASES_ download: [Click here](https://github.com/coin-or/qpOASES)
 
 _qpOASES_ manual for installation: [Click here](https://www.coin-or.org/qpOASES/doc/3.2/manual.pdf)
@@ -36,5 +94,3 @@ In the same folder, type in terminal
 ```
 You may need to press 'space' or any key to continue the program once some picture pops up.
 
-OpenCV quick installation
-----------------------------------------
