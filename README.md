@@ -4,7 +4,7 @@ This program is only for the configuration search for Paper "A Search-based Conf
 ## Prerequisites: ##
 **Linux** environment, **OpenCV** and **qpOASES** libraries installed.
 ### OpenCV:
-If you already have your OpenCV installed on you computer, congratulations. Otherwise, skip to [OpenCV installation instructions](#opencv-quick-installation) and remember to come back after you succeeded.
+I built this program with OpenCV 3.2. If you already have this version installed on you computer, congratulations. Otherwise, skip to [OpenCV installation instructions](#opencv-quick-installation). Remember to come back after you succeeded.
 
 ### qpOASES:
 The following steps are extracted from [qpOASES manual](https://www.coin-or.org/qpOASES/doc/3.2/manual.pdf). You can chech out the manual for more details.
@@ -49,6 +49,7 @@ In the same folder, type in terminal
 No other input needed. During the process of the program, you may be notified to press any key to continue once some picture pops up. Move the focus onto the picutre window and press any key. The output will be in folder `<snake_robot-dir>/outfiles`.
 
 ## OpenCV quick installation: ##
+WARNING: This may install the latest version of OpenCV which could lead to some issues.
 On Ubuntu, you can run:
 
 '''
