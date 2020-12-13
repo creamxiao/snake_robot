@@ -18,7 +18,7 @@ The following steps are extracted from [_qpOASES_ manual](https://www.coin-or.or
 This library libqpOASES.a provides the complete functionality of the qpOASES software package. It can be used by, e.g., linking it against a main function from the examples folder. The make also compiles a couple of test examples; executables are stored within the directory `<qpOASES-dir>/bin`.
 
 4. Running a simple test example:
-Among others, an executable called example1 should have been created; run it in order to test your installation:
+Among others, an executable called `example1` should have been created; run it in order to test your installation:
 ```
     cd <qpOASES-dir>/bin
     ./example1
@@ -29,7 +29,7 @@ If it terminates after successfully solving two QP problems, qpOASES has been su
 ### Installation: ###
 Simply download the whole repository to your local directory. For user's convenience, the third party library [DOSL](https://github.com/subh83/DOSL) is included in this repository. Hereafter we refer to (the full path of) this directory by `<snake_robot-dir>`.
 
-You may need to change the `<snake_robot-dir>/makefile` for compilation. Depending on where you installed _qpOASES_ library, change the line 35 `BINDIR = <qpOASES-dir>/bin` to your pqOASES installed directory, for example `BINDIR = /home/xiaolong/Documents/qpOASES-3.2.1/bin`.
+You may need to change the file `<snake_robot-dir>/makefile` prior to the compilation. Depending on where you installed _qpOASES_ library, change the line 35 `BINDIR = <qpOASES-dir>/bin` into your pqOASES installed directory, for example `BINDIR = /home/xiaolong/Documents/qpOASES-3.2.1/bin`.
 
 ### Compilation: ###
 In terminal, go to the local folder where you put this repository 
