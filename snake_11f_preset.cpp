@@ -11,9 +11,9 @@
 #include <unordered_set>
 #include <math.h>
 #include <algorithm>
-#include <opencv/cv.h>
-#include <opencv/cvaux.h>
-#include <opencv/highgui.h>
+// #include <opencv/cv.h>
+// #include <opencv/cvaux.h>
+// #include <opencv/highgui.h>
 #include <thread>
 #include <typeinfo>
 #include <ctime>
@@ -29,8 +29,8 @@
 #include <iomanip>
 #include <cassert>
 
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/opencv.hpp"
+#include <opencv2/opencv.hpp> 
+#include <opencv2/highgui.hpp> 
 
 #ifndef _DOSL_ALGORITHM // can pass at command line during compilation: -D_DOSL_ALGORITHM=AStar
     #define _DOSL_ALGORITHM  AStar
