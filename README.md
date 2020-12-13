@@ -4,7 +4,9 @@ This program is for the configuration search of Paper "A Search-based Configurat
 Prerequisites:
 ----------------------------------------
 _Linux_ environment, _OpenCV_ and _qpOASES_ libraries installed.
+
 _qpOASES_ download: [Click here](https://github.com/coin-or/qpOASES)
+
 _qpOASES_ manual for installation: [Click here](https://www.coin-or.org/qpOASES/doc/3.2/manual.pdf)
 
 Installation and Compilation of the program:
