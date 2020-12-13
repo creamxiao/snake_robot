@@ -29,7 +29,7 @@ If it terminates after successfully solving two QP problems, qpOASES has been su
 ### Installation: ###
 Simply download the whole repository to your local directory. For user's convenience, the third party library [DOSL](https://github.com/subh83/DOSL) is included in this repository. Hereafter we refer to (the full path of) this directory by `<snake_robot-dir>`.
 
-You may need to change the `<snake_robot-dir>/makefile` for compilation. Depending on where you installed _qpOASES_ library. Change the line 35 `BINDIR = <qpOASES-dir>/bin` to your pqOASES installed directory, for example `BINDIR = /home/xiaolong/Documents/qpOASES-3.2.1/bin`.
+You may need to change the `<snake_robot-dir>/makefile` for compilation. Depending on where you installed _qpOASES_ library, change the line 35 `BINDIR = <qpOASES-dir>/bin` to your pqOASES installed directory, for example `BINDIR = /home/xiaolong/Documents/qpOASES-3.2.1/bin`.
 
 ### Compilation: ###
 In terminal, go to the local folder where you put this repository 
