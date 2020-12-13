@@ -46,9 +46,10 @@ Since installing OpenCV merely in terminal is painful, hereafter we are going to
 ```
 2. After the package `synaptic` has been successfully installed, open `Synaptic Package Manager` in your system applications, search for: `opencv`
 3. Right click to mark the following items in search results for installation:
-       > libcv-dev
-libcv2.4
-libcvaux-dev
+
+> libcv-dev
+> libcv2.4
+> libcvaux-dev
 libcvaux2.4
 libhighgui-dev
 libopencv-calib3d-dev
@@ -92,4 +93,5 @@ libopencv2.4-java
 libopencv2.5-jni
 opencv-data
 3. Click `apply`. Enjoy!
+
 [Go back to Prerequisites](#opencv)
