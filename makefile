@@ -32,7 +32,7 @@ ifeq ($(UNAME_S),Linux)
 	# additional C++ Compiler options for linking (QP)
 	
 	# change this to your installed qpOASES directory, for example: BINDIR = /home/xiaolong/Documents/qpOASES-3.2.1/bin
-	BINDIR = <qpOASES-install-dir>
+	BINDIR = <qpOASES-dir>/bin
 	
 	CXXLINKFLAGSQP = -L${BINDIR} -Wl,-rpath=${BINDIR} ${LINKHSL} -lqpOASES
 
