@@ -52,11 +52,10 @@ No other input needed. During the process of the program, you may be notified to
 WARNING: This may install the latest version of OpenCV which could lead to some issues.
 On Ubuntu, you can run:
 
-'''
+```
 sudo apt update
 sudo apt install libopencv-dev python3-opencv
-
-'''
+```
 
 Since installing OpenCV merely in terminal is painful, hereafter we are going to install it in a much more convenient way.
 1. Open the Linux terminal, input and execute:
