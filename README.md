@@ -8,7 +8,7 @@ _Linux_ environment, _OpenCV_ and _qpOASES_ libraries installed.
 If you already have your _OpenCV_ installed on you computer, congratulations. Otherwise, skip to [OpenCV installation instructions](#opencv-quick-installation) and remember to come back after you succeeded.
 
 ### qpOASES:
-The following steps are extracted from [_qpOASES_ manual](https://www.coin-or.org/qpOASES/doc/3.2/manual.pdf). You can chech the manual for more details.
+The following steps are extracted from [_qpOASES_ manual](https://www.coin-or.org/qpOASES/doc/3.2/manual.pdf). You can chech out the manual for more details.
 1. Download [_qpOASES_](https://github.com/coin-or/qpOASES). You obtained a zipped archive, unpack the archive.
 2. A new directory qpOASES-3.2.1 will be created. From now on we refer to (the full path of) this directory (or the one you used to check out the latest stable branch) by `<qpOASES-dir>`. 
 3. Compilation of the qpOASES library libqpOASES.a and test examples:
@@ -47,7 +47,7 @@ In the same folder, type in terminal
 ```
     ./snake_11f_preset
 ```
-You may need to press 'space' or any key to continue the program once some picture pops up.
+No other input needed. During the process of the program, you may be notified to press any key to continue once some picture pops up. Move the focus onto the picutre window and press any key.
 
 OpenCV quick installation:
 ----------------------------------------
