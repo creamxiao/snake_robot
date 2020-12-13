@@ -28,3 +28,4 @@ In the same folder, type in terminal
 ```
     ./snake_11f_preset
 ```
+You may need to press 'space' or any key to continue the program once some picture pops up.
