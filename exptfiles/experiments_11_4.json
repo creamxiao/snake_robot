@@ -1,0 +1,12 @@
+{
+  'path_plan_1':
+         {  map_name:  "wall_simu_cross.png",
+            start:     [27, 91],
+            angle_s:   0.0,
+            goal:      [235, 91],
+            angle_g:   0.0,
+      PLOT_SCALE: 2,[161, 111],
+      VERTEX_SIZE: 2,
+      LINE_THICKNESS: 2
+        }
+}

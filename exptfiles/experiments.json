@@ -1,0 +1,39 @@
+{
+  'path_plan_1':
+         {  map_name:  "wall_1.png",
+            start:     [77, 218],
+      angle_s:   -1.0,
+      A:	   10,
+      L:         5,
+      goal:      [43, 29],
+      angle_g:   -0.250,
+      PLOT_SCALE: 2,
+      VERTEX_SIZE: 2,
+      LINE_THICKNESS: 2
+        }
+  'path_plan_3':
+			{  map_name:  "wall.png",
+				 start:     [173, 142],
+	 angle_s:   -1.0,
+	 A:	   10,
+	 L:         5,
+	 goal:      [38, 25],
+	 angle_g:   -0.625,
+	 PLOT_SCALE: 2,
+	 VERTEX_SIZE: 2,
+	 LINE_THICKNESS: 2
+	 }
+   'path_plan_2':
+     {  map_name:  "wall_r.png",
+        start:     [14, 50],
+	angle_s:     0.0,
+	A:	   3,
+	L:         2,
+        goal:      [149, 167],
+	augle_g:   0.75,
+	PLOT_SCALE: 3,
+	VERTEX_SIZE: 3,
+	LINE_THICKNESS: 3
+	}
+
+}
