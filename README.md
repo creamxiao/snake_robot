@@ -5,18 +5,20 @@ Prerequisites:
 ----------------------------------------
 _Linux_ environment, _OpenCV_ and _qpOASES_ libraries installed.
 
+If you already have OpenCV installed, congratulations. If you haven't installed OpenCV yet, skip to [OpenCV quick installation](https://github.com/subh83/DOSL#basic-usage) and come back after you succeed.
+
 _qpOASES_ download: [Click here](https://github.com/coin-or/qpOASES)
 
 _qpOASES_ manual for installation: [Click here](https://www.coin-or.org/qpOASES/doc/3.2/manual.pdf)
 
 Installation and Compilation of the program:
 ----------------------------------------
-**Installation:**
+### Installation:
 Simply download the whole repository to your local directory. For user's convenience, the third party library [DOSL](https://github.com/subh83/DOSL) is included in this repository.
 
 You may need to change the `makefile` for compilation. Depending on where you installed _qpOASES_ library. Change the line 35 `BINDIR = <qpOASES-install-dir>` to your installed directory, for example `BINDIR = /home/xiaolong/Documents/qpOASES-3.2.1/bin`.
 
-**Compilation:**
+### Compilation:
 In terminal, go to the local folder where you put this repository 
 ```
     cd <snake_robot-dir>
@@ -33,3 +35,6 @@ In the same folder, type in terminal
     ./snake_11f_preset
 ```
 You may need to press 'space' or any key to continue the program once some picture pops up.
+
+OpenCV quick installation
+----------------------------------------
