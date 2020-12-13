@@ -5,19 +5,28 @@ Prerequisites:
 ----------------------------------------
 _Linux_ environment, _OpenCV_ and _qpOASES_ libraries installed.
 ### OpenCV:
-If you already have your OpenCV installed on you computer, congratulations. Otherwise, skip to [OpenCV installation instructions](#opencv-quick-installation) and come back after you succeeded.
+If you already have your _OpenCV_ installed on you computer, congratulations. Otherwise, skip to [OpenCV installation instructions](#opencv-quick-installation) and remember to come back after you succeeded.
 
 ### qpOASES:
-_qpOASES_ download: [Click here](https://github.com/coin-or/qpOASES)
-
-_qpOASES_ manual for installation: [Click here](https://www.coin-or.org/qpOASES/doc/3.2/manual.pdf)
+The following steps are extracted from [_qpOASES_ manual](https://www.coin-or.org/qpOASES/doc/3.2/manual.pdf). You can chech the manual for more details.
+1. Download [_qpOASES_](https://github.com/coin-or/qpOASES). You obtained a zipped archive, unpack the archive.
+2. A new directory qpOASES-3.2.1 will be created. From now on we refer to (the full path of) this directory (or the one you used to check out the latest stable branch) by `<qpOASES-dir>`. 
+3. Compilation of the qpOASES library libqpOASES.a and test examples:
+```
+    cd <qpOASES-dir>
+    make
+```
+This library libqpOASES.a provides the complete functionality of the qpOASES software package. It can be used by, e.g., linking it against a main function from the
+examples folder.
+The make also compiles a couple of test examples; executables are stored within the
+directory `<install-dir>/bin`.
 
 Installation and Compilation of the program:
 ----------------------------------------
 ### Installation:
-Simply download the whole repository to your local directory. For user's convenience, the third party library [DOSL](https://github.com/subh83/DOSL) is included in this repository.
+Simply download the whole repository to your local directory. For user's convenience, the third party library [DOSL](https://github.com/subh83/DOSL) is included in this repository. Hereafter we refer to (the full path of) this directory by `<snake_robot-dir>`.
 
-You may need to change the `makefile` for compilation. Depending on where you installed _qpOASES_ library. Change the line 35 `BINDIR = <qpOASES-install-dir>` to your installed directory, for example `BINDIR = /home/xiaolong/Documents/qpOASES-3.2.1/bin`.
+You may need to change the `<snake_robot-dir>/makefile` for compilation. Depending on where you installed _qpOASES_ library. Change the line 35 `BINDIR = <qpOASES-install-dir>` to your installed directory, for example `BINDIR = /home/xiaolong/Documents/qpOASES-3.2.1/bin`.
 
 ### Compilation:
 In terminal, go to the local folder where you put this repository 
@@ -44,12 +53,12 @@ Since installing OpenCV merely in terminal is painful, hereafter we are going to
 ```
     sudo apt-get install synaptic
 ```
-2. After the package `synaptic` has been successfully installed, open `Synaptic Package Manager` in your system applications, search for: `opencv`
-3. Right click to mark the following items in search results for installation:
+2. After the package `synaptic` has been successfully installed, open `Synaptic Package Manager` in your system applications, click `search` button on the top and type in `opencv`. Click `search`.
+3. Check all following items from the search results and choose `mark for installation`.
 
 > libcv-dev
-> libcv2.4
-> libcvaux-dev
+libcv2.4
+libcvaux-dev
 libcvaux2.4
 libhighgui-dev
 libopencv-calib3d-dev
