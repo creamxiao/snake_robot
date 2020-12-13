@@ -3,12 +3,12 @@ This program is for the configuration search of Paper "A Search-based Configurat
 
 Prerequisites:
 ----------------------------------------
-_Linux_ environment, _OpenCV_ installed.
+_Linux_ environment, _OpenCV_ and _qpOASES_ libraries installed.
 
 Installation and Compilation of the program:
 ----------------------------------------
 **Installation:**
-Simply download the whole repository to your local directory. For user's convenience, the third party libraries _DOSL_ and _qpOASES_ are included in this repository.
+Simply download the whole repository to your local directory. For user's convenience, the third party library [DOSL](https://github.com/subh83/DOSL)_ is included in this repository.
 
 You may need to change the `makefile` for compilation. This paragraph is to be revised...
 
