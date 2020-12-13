@@ -47,7 +47,7 @@ In the same folder, type in terminal
 ```
     ./snake_11f_preset
 ```
-No other input needed. During the process of the program, you may be notified to press any key to continue once some picture pops up. Move the focus onto the picutre window and press any key.
+No other input needed. During the process of the program, you may be notified to press any key to continue once some picture pops up. Move the focus onto the picutre window and press any key. The output will be in folder `<snake_robot-dir>/outfiles`.
 
 OpenCV quick installation:
 ----------------------------------------
