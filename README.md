@@ -17,7 +17,11 @@ Simply download the whole repository to your local directory. For user's conveni
 You may need to change the `makefile` for compilation. Depending on where you installed _qpOASES_ library. Change the line 35 `BINDIR = <qpOASES-install-dir>` to your installed directory, for example `BINDIR = /home/xiaolong/Documents/qpOASES-3.2.1/bin`.
 
 **Compilation:**
-Go to the local folder where you put this repository in terminal, compile by running
+In terminal, go to the local folder where you put this repository 
+```
+    cd <snake_robot-dir>
+```
+compile by running
 ```
     make snake_11f_preset
 ```
