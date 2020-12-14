@@ -50,7 +50,7 @@ ifeq ($(UNAME_S),Linux)
 endif
 
 INC_DOSL = -I$(DOSL_FOLDER)
-INC_LOCAL = -I. -Iinclude
+INC_LOCAL = -I. -Iinclude -I/usr/local/include/opencv4
 
 # --------------------------------------------
 # DOSL-specific
