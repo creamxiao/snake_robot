@@ -52,7 +52,7 @@ If you want to run it on other setups, add an argument after the programe name, 
 ```
     ./snake_config_search_precal 22c
 ```
-for Figure 22c. This repository incluces setups for Figure 21a, Figure 22a-22h.
+for Figure 22c. This repository incluces setups for Figure 21a, Figure 22a-22h. All setup information is stored in folder`<snake_robot-dir>/exptfiles`.
 ## OpenCV quick installation: ##
 On Ubuntu, you can run:
 
