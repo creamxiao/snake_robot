@@ -1,5 +1,5 @@
 # Snake-like robot bracing and passive supporting configuration search #
-This program is only for the configuration search for Paper "A Search-based Configuration and Motion Planning Algorithm for a Snake-like Robot Performing Load-intensive Operations".
+This program is only for the configuration search for Paper "A Search-based Configuration and Motion Planning Algorithm for a Snake-like Robot Performing Load-intensive Operations". The included setups (maps and start/goal poses) are only for demonstrating the optimized performance with the pre-computated cost/heuristic values.
 
 ## Prerequisites: ##
 **Linux** environment, **OpenCV** and **qpOASES** libraries installed.
@@ -46,8 +46,13 @@ In the same folder, type in terminal
 ```
     ./snake_11f_preset
 ```
-No other input needed. During the process of the program, you may be notified to press any key to continue once some picture pops up. Move the focus onto the picutre window and press any key. The output will be in folder `<snake_robot-dir>/outfiles`.
+When there's no other arguments, the default setup is Figure 21a. During the process of the program, you may be notified to press any key to continue once some picture pops up. Move the focus onto the picutre window and press any key. The output will be in folder `<snake_robot-dir>/outfiles`.
 
+If you want to run on other setups, add an argument after the programe name. For example, run
+```
+    ./snake_11f_preset figure22c
+```
+for Figure 22c.
 ## OpenCV quick installation: ##
 On Ubuntu, you can run:
 
