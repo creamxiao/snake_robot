@@ -1,18 +1,18 @@
 #ifndef CONFIGSEARCH
 #define CONFIGSEARCH
 
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/opencv.hpp"
+// #include "opencv2/imgproc/imgproc.hpp"
+// #include "opencv2/opencv.hpp"
 
-#include <dosl/dosl>
-#include "local-include/RSJparser.tcc"
-#include "parameters.hpp"
-#include "LINK.hpp"
-#include "POINT.hpp"
+// #include <dosl/dosl>
+// #include "local-include/RSJparser.tcc"
+// #include "parameters.hpp"
+// #include "LINK.hpp"
+// #include "POINT.hpp"
 #include <qpOASES.hpp> // quadratic programming
 
-using namespace std;
-using namespace cv;
+// using namespace std;
+// using namespace cv;
 USING_NAMESPACE_QPOASES
 
 extern vector<POINT> sk_cost;

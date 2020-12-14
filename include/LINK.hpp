@@ -1,10 +1,10 @@
 #ifndef LIN
 #define LIN
 
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/opencv.hpp"
+// #include "opencv2/imgproc/imgproc.hpp"
+// #include "opencv2/opencv.hpp"
 
-#include "POINT.hpp"
+// #include "POINT.hpp"
 using namespace std;
 using namespace cv;
 

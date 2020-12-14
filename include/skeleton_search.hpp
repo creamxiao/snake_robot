@@ -1,14 +1,14 @@
 #ifndef SKELETONSEARCH
 #define SKELETONSEARCH
 
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/opencv.hpp"
+// #include "opencv2/imgproc/imgproc.hpp"
+// #include "opencv2/opencv.hpp"
 
-#include <dosl/dosl>
-#include "local-include/RSJparser.tcc"
-#include "POINT.hpp"
-using namespace std;
-using namespace cv;
+// #include <dosl/dosl>
+// #include "local-include/RSJparser.tcc"
+// #include "POINT.hpp"
+// using namespace std;
+// using namespace cv;
 
 //class searchSkeleton : public DOSL_CLASS(Problem)<POINT,double>
 class searchSkeleton : public AStar::Algorithm<searchSkeleton, POINT, double>{

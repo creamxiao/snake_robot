@@ -2,14 +2,14 @@
 #define POI
 
 // standard headers
-#include <stdio.h>
-#include <vector>
-#include <math.h>
+// #include <stdio.h>
+// #include <vector>
+// #include <math.h>
 
 // DOSL headers:
-#include <dosl/dosl>
-#include "parameters.hpp"
-using namespace std;
+// #include <dosl/dosl>
+// #include "parameters.hpp"
+// using namespace std;
 
 class POINT : public AStar::Node<POINT,double>{
 public:
