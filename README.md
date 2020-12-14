@@ -48,11 +48,11 @@ In the same folder, type in terminal
 ```
 When there's no other arguments, the default setup is Figure 21a. During the process of the program, you may be notified to press any key to continue once some picture pops up. Move the focus onto the picutre window and press any key. The output will be in folder `<snake_robot-dir>/outfiles`.
 
-If you want to run on other setups, add an argument after the programe name. For example, run
+If you want to run it on other setups, add an argument after the programe name, separated with a space. For example, run
 ```
-    ./snake_config_search_preset figure22c
+    ./snake_config_search_preset 22c
 ```
-for Figure 22c.
+for Figure 22c. This repository incluces setups for Figure 21a, Figure 22a-22h.
 ## OpenCV quick installation: ##
 On Ubuntu, you can run:
 
