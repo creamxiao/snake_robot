@@ -75,8 +75,8 @@ LIBS_THREAD = -pthread
 
 # --------------------------------------------
 
-.PHONY: snake_11f_preset
-snake_11f_preset:
+.PHONY: snake_config_search_preset
+snake_config_search_preset:
 	@printf $(OS_String)
 	@printf "\nNow compiling '$@'...\n"
 	@printf $(DOSL_INTRO_STRING)
