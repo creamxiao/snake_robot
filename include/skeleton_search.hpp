@@ -101,7 +101,7 @@ public:
           double dx = tn.x - n.x, dy = tn.y - n.y, op = 1.0;
 
           if (original_map.at<Vec3b>((int)round(tn.y), (int)round(tn.x)).val[2] < 200){
-            op = 0.5;
+            op = 0.4;
             // printf("get a cost discount at (%g, %g)\n", round(tn.x), round(tn.y));
           }
 

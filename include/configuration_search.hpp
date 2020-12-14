@@ -51,12 +51,10 @@ public:
 
 	// Image display variables / parameters
 	Mat realtime_display;
-	//double PLOT_SCALE;
-	//double VERTEX_SIZE, LINE_THICKNESS;
-	clock_t start_time;
-	double duration;
-	int mins, flagmin, SAVE_FLAG;
-  unsigned long int n_successors; // number of successor expanded
+	// clock_t start_time;
+	double preCalDuration, searchDuration;
+  struct timespec start_time, finish_time;
+	int flagmin, SAVE_FLAG;
 
 	// variables decsribing problem
 	int MAX_X, MIN_X, MAX_Y, MIN_Y;
@@ -148,7 +146,6 @@ public:
 		expt_folderName = expt_fName.substr(0, expt_fName.find_last_of("/\\")+1);
 
 		flagmin = -1;
-    n_successors = 0;
     SAVE_FLAG = 0;
 
 		cout << "start reading RSJresource" << endl;
@@ -175,23 +172,20 @@ public:
     cout << "Search Mode: " << searchMode << endl;
 
     cvtColor(original_map, grey_map, CV_RGB2GRAY);
-    if (searchMode == 0){
-      threshold(grey_map, grey_map, 80, 255, 0);
-    }else{
+    // if (searchMode == 0){
+    //   threshold(grey_map, grey_map, 80, 255, 0);
+    // }else{
       threshold(grey_map, grey_map, 20, 255, 0);
-    }
+    // }
     cvtColor(grey_map, color_map, CV_GRAY2RGB);
     resize(color_map, realtime_display, Size(), PLOT_SCALE, PLOT_SCALE, INTER_NEAREST);
 
     if (searchMode == 0){
       printf("Pre-calculating for heuristic function...");
 
-      struct timespec start_time, finish_time;
       clock_gettime(CLOCK_MONOTONIC, &start_time);
 
-      Mat pre_result;
-      int Mapping_scalar = 4;
-      resize(color_map, pre_result, Size(), Mapping_scalar, Mapping_scalar, INTER_NEAREST);
+      Mat pre_result = realtime_display.clone();
 
       SkeletonMat = new Point * [MAX_Y];
       for(int j = 0; j < MAX_Y; j++){
@@ -202,35 +196,44 @@ public:
           }else{
             SkeletonMat[j][i] = PresetClosestPt(Point(i,j), color_map);
             if (SkeletonMat[j][i] != Point(-1,-1)){
-              line(pre_result, cvPoint(i * Mapping_scalar, j * Mapping_scalar),
-                cvPoint(sk_cost[SkeletonMat[j][i].x].x * Mapping_scalar, sk_cost[SkeletonMat[j][i].x].y * Mapping_scalar), CV_RGB(200, 200, 200), LINE_THICKNESS);
+              line(pre_result, cv_plot_coord(i, j),
+                cv_plot_coord(sk_cost[SkeletonMat[j][i].x]), CV_RGB(200, 200, 200), LINE_THICKNESS);
             }else{
               SkeletonMat[j][i] = Point(0, 0);
             }
           }
         }
       }
-      double d;
+
       clock_gettime(CLOCK_MONOTONIC, &finish_time);
-      d = (finish_time.tv_sec - start_time.tv_sec);
-      d += (finish_time.tv_nsec - start_time.tv_nsec) / 1000000000.0;
+      preCalDuration = (finish_time.tv_sec - start_time.tv_sec);
+      preCalDuration += (finish_time.tv_nsec - start_time.tv_nsec) / 1000000000.0;
 
       // plot the skeleton
       for(auto i : sk_cost){
-        cvPlotPoint(pre_result, cv_plot_coord(i.x * Mapping_scalar / PLOT_SCALE, i.y * Mapping_scalar / PLOT_SCALE), CV_RGB(0, 165, 81), VERTEX_SIZE * 2);
+        cvPlotPoint(pre_result, cv_plot_coord(i), CV_RGB(0, 165, 81), VERTEX_SIZE * 2);
       }
+      LINK drillhead = startL;
+      drillhead.reverseLINK();
+      drillhead.head = true;
+      drillhead.plotLINK(pre_result);
+      // plot start and goal
+      cvPlotPoint(pre_result, cv_plot_coord(sk_cost.front()), CV_RGB(255, 0, 0), VERTEX_SIZE * 3);
+      cvPlotPoint(pre_result, cv_plot_coord(sk_cost.back()), CV_RGB(255, 0, 0), VERTEX_SIZE * 3);
+
       time_t now = time(0);
 	    tm* localtm = localtime(&now);
-      printf("completed! Pre-cal time: %g\n", d);
-      imshow("Precalculation", pre_result);
+      printf("completed! Pre-cal time: %g\nPress any key to start searching for the bracing configuration\n", preCalDuration);
+      imshow("Display window", pre_result);
       imwrite("outfiles/"
               + to_string(1900 + localtm->tm_year) + "_"
-              + to_string(localtm->tm_mon) + "_"
+              + to_string(1 + localtm->tm_mon) + "_"
               + to_string(localtm->tm_mday) + "_"
               + to_string(localtm->tm_hour) + "_"
               + to_string(localtm->tm_min) + "_shortest_search.png", pre_result);
       cvWaitKey();
-      destroyWindow("Precalculation");
+      cout << "Started..." << endl;
+      // destroyWindow("Precalculation");
     }
 
     //realtime_display = color_map.clone();
@@ -247,7 +250,7 @@ public:
     line(realtime_display, cv_plot_coord(startLink.x, startLink.y),
 			cv_plot_coord((startLink.x + (startLink.expansion * L + AA * 2) * cos(startLink.theta)), (startLink.y + (startLink.expansion * L + AA * 2) * sin(startLink.theta))), CV_RGB(200, 200, 200), LINE_THICKNESS);
 
-		start_time = clock();
+		clock_gettime(CLOCK_MONOTONIC, &start_time);
 	}
 
   bool InterOnSeg(POINT intersectP, SEG seg, bool m) {
@@ -407,40 +410,38 @@ public:
   void getClosestPt(LINK & n){ // get the closest point of sk_cost/sk_deu to the end of this link
     int rdY = min(MAX_Y - 1, max(MIN_Y, (int)round(n.getHeadY())));
     int rdX = min(MAX_X - 1, max(MIN_X, (int)round(n.getHeadX())));
-    if ((int)round(n.getHeadX()) < MIN_X){
-      cout << "exceed low X bound: " << (int)round(n.getHeadX()) << ", corrected: " << rdX << endl;
-    }
-    if ((int)round(n.getHeadY()) < MIN_Y){
-      cout << "exceed low Y bound: " << (int)round(n.getHeadY()) << ", corrected: " << rdY << endl;
-    }
-    if ((int)round(n.getHeadX()) >= MAX_X){
-      cout << "exceed upper X bound: " << (int)round(n.getHeadX()) << ", corrected: " << rdX << endl;
-    }
-    if ((int)round(n.getHeadY()) >= MAX_Y){
-      cout << "exceed upper Y bound: " << (int)round(n.getHeadY()) << ", corrected: " << rdY << endl;
-    }
+    // if ((int)round(n.getHeadX()) < MIN_X){
+    //   cout << "exceed low X bound: " << (int)round(n.getHeadX()) << ", corrected: " << rdX << endl;
+    // }
+    // if ((int)round(n.getHeadY()) < MIN_Y){
+    //   cout << "exceed low Y bound: " << (int)round(n.getHeadY()) << ", corrected: " << rdY << endl;
+    // }
+    // if ((int)round(n.getHeadX()) >= MAX_X){
+    //   cout << "exceed upper X bound: " << (int)round(n.getHeadX()) << ", corrected: " << rdX << endl;
+    // }
+    // if ((int)round(n.getHeadY()) >= MAX_Y){
+    //   cout << "exceed upper Y bound: " << (int)round(n.getHeadY()) << ", corrected: " << rdY << endl;
+    // }
     Point ptIndex = SkeletonMat[rdY][rdX];
     n.iClosestP_cost = ptIndex.x;
     n.iClosestP_heu = ptIndex.y;
-    // if (n.iClosestP_cost != -1 && n.iClosestP_heu != -1)
-    //   printf("closest cost point: %d, closest heu point: %d\n", n.iClosestP_cost, n.iClosestP_heu);
   }
 
   int getClosestIndex(POINT n){ // get the closest point of sk_cost/sk_deu to the end of this link
     int rdY = min(MAX_Y - 1, max(MIN_Y, (int)round(n.y)));
     int rdX = min(MAX_X - 1, max(MIN_X, (int)round(n.x)));
-    if ((int)round(n.x) < MIN_X){
-      cout << "exceed low X bound: " << (int)round(n.x) << ", corrected: " << rdX << endl;
-    }
-    if ((int)round(n.y) < MIN_Y){
-      cout << "exceed low Y bound: " << (int)round(n.y) << ", corrected: " << rdY << endl;
-    }
-    if ((int)round(n.x) >= MAX_X){
-      cout << "exceed upper X bound: " << (int)round(n.x) << ", corrected: " << rdX << endl;
-    }
-    if ((int)round(n.y) >= MAX_Y){
-      cout << "exceed upper Y bound: " << (int)round(n.y) << ", corrected: " << rdY << endl;
-    }
+    // if ((int)round(n.x) < MIN_X){
+    //   cout << "exceed low X bound: " << (int)round(n.x) << ", corrected: " << rdX << endl;
+    // }
+    // if ((int)round(n.y) < MIN_Y){
+    //   cout << "exceed low Y bound: " << (int)round(n.y) << ", corrected: " << rdY << endl;
+    // }
+    // if ((int)round(n.x) >= MAX_X){
+    //   cout << "exceed upper X bound: " << (int)round(n.x) << ", corrected: " << rdX << endl;
+    // }
+    // if ((int)round(n.y) >= MAX_Y){
+    //   cout << "exceed upper Y bound: " << (int)round(n.y) << ", corrected: " << rdY << endl;
+    // }
     return SkeletonMat[rdY][rdX].x;
   }
 
@@ -585,25 +586,6 @@ public:
         }
       }
 
-
-/*
-      for(auto a : pathLks){
-        if (!a.forces.empty()){
-          double constTerm = a.gAccT + ((drillLink.x - a.getHeadX()) * sin(drillLink.theta + PI) - (drillLink.y - a.getHeadY()) * cos(drillLink.theta + PI)) * DRILLFORCE * P2M_SCALE;
-          vector<double> coeF;
-          for(int i = 0; i < a.forces.size(); i++){ // calculate the coefficients of forces
-            coeF.push_back(((a.forces[i][2] - a.getHeadX()) * a.forces[i][1] - (a.forces[i][3] - a.getHeadY()) * a.forces[i][0]) * P2M_SCALE);
-          }
-          for(int i = 0; i < a.forces.size(); i++){
-            GM[i] += 2 * constTerm * coeF[i];
-            for(int j = 0; j < a.forces.size(); j++){
-              HM[i * nV + j] += 2 * coeF[i] * coeF[j];
-            }
-          }
-        }
-      }
-*/
-
       for(int_t j = 0; j < nV; j++){
         for(int_t i = 0; i < nC; i++){
           if (i < 2){
@@ -662,72 +644,7 @@ public:
         return false;
       }
 
-    }else{
-      // tapping
-      /*
-      int nV = n.forces.size(), nC = n.forces.size() + 3;
-      // nV = number of variables, nC = number of constraints
-
-      real_t HM[nV * nV];
-      real_t AM[nC * nV];
-      real_t GM[nV];
-      real_t lb[nV];
-      real_t ub[nV];
-      real_t lbA[nC];
-      real_t ubA[nC];
-
-      double constTerm = n.gAccT;
-      vector<double> coeF;
-      for(int i = 0; i < nV; i++){ // calculate the coefficients of forces
-        coeF.push_back(((n.forces[i][2] - n.getHeadX()) * n.forces[i][1] - (n.forces[i][3] - n.getHeadY()) * n.forces[i][0]) * P2M_SCALE);
-      }
-      for(int i = 0; i < nV; i++){
-        GM[i] = 2 * constTerm * coeF[i];
-        for(int j = 0; j < nV; j++){
-          HM[i * nV + j] = 2 * coeF[i] * coeF[j];
-        }
-      }
-
-      for(int_t j = 0; j < nV; j++){
-        for(int_t i = 0; i < nC; i++){
-          if (i < 2){
-            AM[i * nV + j] = fabs(n.forces[(int)j][(int)i]) < INFINITESIMAL_DOUBLE? 0.0 : n.forces[(int)j][(int)i];
-          }else if (i == 2){
-            AM[i * nV + j] = ((n.forces[(int)j][2] - n.getHeadX()) * n.forces[(int)j][1] - (n.forces[(int)j][3] - n.getHeadY()) * n.forces[(int)j][0]) * P2M_SCALE;
-          }else if (i == ((int_t)(j / 2) + 3)){
-            AM[i * nV + j] = ((int)j % 2 == 0)? -MU : 1.0;
-          }else if (i == ((int)(j / 2) + 3 + (int)(n.forces.size() / 2))){
-            AM[i * nV + j] = ((int)j % 2 == 0)? MU : 1.0;
-          }else{
-            AM[i * nV + j] = 0.0;
-          }
-        }
-      }
-
-      for(int_t i = 0; i < nV; i++ ){
-        lb[i] = (i % 2 == 0)? 0.0 : -MU * MAXFORCE;
-        ub[i] = ((i % 2 == 0)? 1.0 : MU) * MAXFORCE;
-      }
-
-      for(int_t i = 0; i < nC; i++){
-        if (i == 0){
-          lbA[i] = -n.gAccX;
-          ubA[i] = -n.gAccX;
-        }else if (i == 1){
-          lbA[i] = -n.gAccY;
-          ubA[i] = -n.gAccY;
-        }else if (i == 2){
-          lbA[i] = -n.gAccT;
-          ubA[i] = -n.gAccT;
-        }else if (i < (n.forces.size() / 2 + 3)){
-          lbA[i] = - 2 * MU * MAXFORCE;
-          ubA[i] = 0.0;
-        }else{
-          lbA[i] = 0.0;
-          ubA[i] = 2 * MU * MAXFORCE;
-        }
-      }
-      */
+    }else{// tapping
       int nV = n.forces.size() + 1, nC = n.forces.size() + 3;
       // nV = number of variables, nC = number of constraints
 
@@ -812,61 +729,7 @@ public:
       int_t nWSR = 100;
 
       if (SUCCESSFUL_RETURN == exampleCP.init(HM, GM, AM, lb, ub, lbA, ubA, nWSR)){
-        // printf("Able to balance gravity of robot body: (%g, %g) and moment of gravity: %g\n", n.gAccX, n.gAccY, n.gAccT);
-
-        // cout << endl;
-        // cout << "HM =" << endl;
-        // for(int i = 0; i < nV; i++){
-        //   for(int j = 0; j < nV; j++){
-        //     cout << HM[i * nV + j] << "\t";
-        //   }
-        //   cout << endl;
-        // }
-
-        // cout << endl;
-        // cout << "AM =" << endl;
-        // for(int i = 0; i < nC; i++){
-        //   for(int j = 0; j < nV; j++){
-        //     cout << AM[i * nV + j] << "\t";
-        //   }
-        //   cout << endl;
-        // }
-
-        // cout << endl;
-        // cout << "GM =" << endl;
-        // for(int j = 0; j < nV; j++){
-        //   cout << GM[j] << "\t";
-        // }
-        // cout << endl;
-
-        // cout << endl;
-        // cout << "lb =" << endl;
-        // for(int j = 0; j < nV; j++){
-        //   cout << lb[j] << "\t";
-        // }
-        // cout << endl;
-
-        // cout << endl;
-        // cout << "ub =" << endl;
-        // for(int j = 0; j < nV; j++){
-        //   cout << ub[j] << "\t";
-        // }
-        // cout << endl;
-
-        // cout << endl;
-        // cout << "lbA =" << endl;
-        // for(int j = 0; j < nC; j++){
-        //   cout << lbA[j] << "\t";
-        // }
-        // cout << endl;
-
-        // cout << endl;
-        // cout << "ubA =" << endl;
-        // for(int j = 0; j < nC; j++){
-        //   cout << ubA[j] << "\t";
-        // }
-        // cout << endl;
-
+        // if feasible
         return true;
       }else{
         return false;
@@ -1092,9 +955,6 @@ public:
           s->push_back(tn);
           c->push_back(distance / (AA * 2 + L)); // projection on the sk_cost
           display = true;
-
-          n_successors++;
-          // cout << "Links expanded: " << n_successors << endl;
         }
       }
     }else if (searchMode == 1){
@@ -1129,13 +989,11 @@ public:
           c->push_back((AA * 2 + L * tn.expansion) / (AA * 2 + L)); // projection on the sk_cost
 
           display = true;
-          n_successors++;
-          // cout << "Links expanded: " << n_successors << endl;
         }
       }
     }
 
-    if (n_successors > (SAVE_FLAG * 10000)){
+    if (expand_count > (SAVE_FLAG * 10000)){
       vector<LINK *> p = reconstructPointerPath(n);// Reconstruct the path with the previous link
       vector<LINK> pathLks;
       for (int i = p.size() - 1; i >= 0; i--)
@@ -1175,8 +1033,8 @@ public:
       }
 
       // plot start link and goal point
-      cvPlotPoint(realtime_display, cv_plot_coord(startLink.x, startLink.y), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
-      cvPlotPoint(realtime_display, cv_plot_coord(goalLink.x, goalLink.y), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
+      cvPlotPoint(realtime_display, cv_plot_coord(startLink.getPoint()), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
+      cvPlotPoint(realtime_display, cv_plot_coord(goalLink.getPoint()), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
 
       // namedWindow("Display window", WINDOW_AUTOSIZE);
       sprintf(out_Name, "outfiles/link_path_%d_at_%d_successors.png", searchMode + 1, SAVE_FLAG);
@@ -1190,28 +1048,6 @@ public:
         line(realtime_display, cv_plot_coord(i.x, i.y),
           cv_plot_coord(i.getHeadX(), i.getHeadY()), CV_RGB(200, 200, 200), LINE_THICKNESS);
     }
-
-    //print time and save screenshots
-		duration = (clock() - start_time) / (double) CLOCKS_PER_SEC;
-		mins = (int)(duration / 60);
-		//cout << "Running time: " << mins << " mins " << (duration - 60 * mins) << " secs" << endl;
-    /*
-    if (flagmin != mins){
-      vector<LINK *> px = reconstructPointerPath(n);
-      for(auto it : px){
-        line(realtime_display, cv_plot_coord((*it).x, (*it).y),
-          cv_plot_coord((*it).getHeadX(), (*it).getHeadY()), CV_RGB(0, 200, 0), LINE_THICKNESS);
-      }
-			sprintf(out_Name, "outfiles/link_path_%d_at_%d_min.png", searchMode + 1, mins);
-			imwrite(out_Name, realtime_display);
-      // erase
-      for(auto it : px){
-        line(realtime_display, cv_plot_coord((*it).x, (*it).y),
-          cv_plot_coord((*it).getHeadX(), (*it).getHeadY()), CV_RGB(200, 200, 200), LINE_THICKNESS);
-      }
-			flagmin = mins;
-		}
-    */
   }
 
 	double getHeuristics(LINK & n)
@@ -1282,7 +1118,7 @@ public:
 
           getClosestPt(tn);
           if (!isLinkAccessible(tn, startLink)){
-            cout << "Getting startLINK continued because of inaccessibility" << endl;
+            // cout << "Getting startLINK continued because of inaccessibility" << endl;
             continue;
           }
           //draw the new successor in red
@@ -1296,17 +1132,25 @@ public:
 	}
 
 	bool stopSearch (LINK & n) {
-    if (searchMode == 0){ // Check if the path is balanced, no need to reach the goal
+    if (searchMode == 0){ // Check if the path is balanced, no need to reach the goal (entrance)
       if (n.brace){
         // reject segments pointing back
-        if (getClosestIndex(n.getPoint()) > getClosestIndex(n.getHead())) return false;
-        // additional conditions
-        // if (n.forces.size() < 6) return false;
-        // if (n.x < 107.0) return false;
-        // if (!((fabs(sin(n.theta) - sin(0.75 * PI)) < INFINITESIMAL_DOUBLE)
-        //     && (fabs(cos(n.theta) - cos(0.75 * PI)) < INFINITESIMAL_DOUBLE))) return false;
-        if (!(fabs(cos(n.theta) - (-1)) < INFINITESIMAL_DOUBLE)) return false;
-
+        int rootIndex = getClosestIndex(n.getPoint()), headIndex = getClosestIndex(n.getHead());
+        if (rootIndex > headIndex) {
+          return false;
+        }else if (rootIndex == headIndex){
+          int previousIndex, nextIndex;
+          if ((rootIndex + 1) >= sk_cost.size()){
+            nextIndex = rootIndex;
+            previousIndex = rootIndex - 1;
+          }else{
+            nextIndex = rootIndex + 1;
+            previousIndex = rootIndex;
+          }
+          double headingBack = (sk_cost[nextIndex].x - sk_cost[previousIndex].x) * sin(n.theta)
+                                - (sk_cost[nextIndex].y - sk_cost[previousIndex].y) * cos(n.theta);
+          if (headingBack < INFINITESIMAL_DOUBLE) return false;
+        }
 
         if (forceSpanningCheck(n, false)){
           if(forceSpanningCheck(n, true)) {
@@ -1318,7 +1162,14 @@ public:
 
             if (ChkPthSelf_tangle(pathLks)) return false;
 
-            printf("A force-balanced path found, time: %d mins %g secs\n", mins, duration - 60 * mins);
+
+            clock_gettime(CLOCK_MONOTONIC, &finish_time);
+            searchDuration = (finish_time.tv_sec - start_time.tv_sec);
+            searchDuration += (finish_time.tv_nsec - start_time.tv_nsec) / 1000000000.0;
+
+            printf("Bracing configuration found, duration: %d mins %g secs\n",
+                  (int)floor(searchDuration / 60.0),
+                  searchDuration - 60.0 * (int)floor(searchDuration / 60.0));
 
             Mat decision_display = realtime_display.clone();
             // Draw the path
@@ -1328,49 +1179,23 @@ public:
                                 (i.y + (i.expansion * L + AA * 2) * sin(i.theta))),
                   CV_RGB(0, 200, 0), LINE_THICKNESS * 2);
 
-            // namedWindow("Display window", WINDOW_AUTOSIZE);
+            paths.push_back(n);
             imshow("Display window", decision_display);
-            imwrite("outfiles/decision.png", decision_display);
-            cvWaitKey(1);
-            printf("Got a valid path. n.theta = %g PI, sin(n.theta) = %g\nDo you want to start the 2nd searching with this output? (y or n) ", n.theta / PI, sin(n.theta));
-            string inp;
-            cin >> inp;
+            // imwrite("outfiles/decision.png", decision_display);
+            printf("Got a valid path. n.theta = %g PI, sin(n.theta) = %g. Press any key to continue\n", n.theta / PI, sin(n.theta));
+            cvWaitKey();
 
-            if (inp == "y"){
-        			paths.push_back(n);
-        			return true;
-            }else{
-              n.continue_expansion = false;
-              return false;
-            }
-          }else{
-            printf("tapping satisfied but drilling not satisfied!\n");
-            // Mat dia_mat = realtime_display.clone();
-            // vector<LINK*> p = reconstructPointerPath(n);
-            // vector<LINK> pathLks;
-            // for (int i = p.size() - 1; i >= 0; i--)
-            //   pathLks.push_back(* p[i]);
-
-            // // Draw the path
-            // for(auto i : pathLks)
-            //   line(dia_mat, cv_plot_coord(i.x, i.y),
-            //     cv_plot_coord((i.x + (i.expansion * L + AA * 2) * cos(i.theta)), (i.y + (i.expansion * L + AA * 2) * sin(i.theta))), CV_RGB(0, 200, 0), LINE_THICKNESS);
-
-            // circle(dia_mat, cv_plot_coord(n.forces.back()[2], n.forces.back()[3]),	PLOT_SCALE * VERTEX_SIZE , CV_RGB(255, 0, 0), -1, CV_AA);
-
-            // //namedWindow( "Diagnose window", WINDOW_AUTOSIZE);
-            // imshow("Diagnose window", dia_mat);
-            // imwrite("outfiles/diagnose.png", dia_mat);
-            // if (n.forces.size() < 6)
-            //   cvWaitKey(1);
-            return false;
+            return true;
           }
-        }else{
-          return false;
         }
       }
     }else if (n.reachGoal(goalLink)){
-      printf("A path found, time: %d mins %g secs\n", mins, duration - 60 * mins);
+      clock_gettime(CLOCK_MONOTONIC, &finish_time);
+      searchDuration = (finish_time.tv_sec - start_time.tv_sec);
+      searchDuration += (finish_time.tv_nsec - start_time.tv_nsec) / 1000000000.0;
+      printf("Passive supporting configuration found, duration: %d mins %g secs\n",
+            (int)floor(searchDuration / 60.0),
+            searchDuration - 60.0 * (int)floor(searchDuration / 60.0));
   		paths.push_back(n);
 			return true;
 		}
