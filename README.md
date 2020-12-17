@@ -46,13 +46,13 @@ In the same folder, type in terminal
 ```
     ./snake_config_search_precal
 ```
-When there's no other arguments, the default setup is Figure 21a. During the process of the program, once `Display window` pops up and it notifies you to press any key in the terminal, click on the window (move the focus onto the window) and press any key to continue. The output will be in folder `<snake_robot-dir>/outfiles`.
+When there's no other arguments, the default setup is Figure 23a. During the process of the program, once `Display window` pops up and it notifies you to press any key in the terminal, click on the window (move the focus onto the window) and press any key to continue. The output will be in folder `<snake_robot-dir>/outfiles`.
 
 If you want to run it on other setups, add an argument after the programe name, separated with a space. For example, run
 ```
-    ./snake_config_search_precal 22c
+    ./snake_config_search_precal 26c
 ```
-for Figure 22c. This repository incluces setups for Figure 21a, Figure 22a-22h. All setup information is stored in folder`<snake_robot-dir>/exptfiles`.
+for Figure 26c. This repository incluces setups for Figure 23a, Figure 26a-26f. All setup information is stored in folder`<snake_robot-dir>/exptfiles`.
 ## OpenCV quick installation: ##
 On Ubuntu, you can run:
 
