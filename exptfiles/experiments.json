@@ -1,5 +1,5 @@
 {
-  '21a':
+  '23a':
     {
     map_name:  "wall_1.png",
     start:     [77, 218],
@@ -7,7 +7,7 @@
     goal:      [41, 29],
     angle_g:   1.75
     },
-  '22a':
+  '26a':
     {
     map_name:  "wall_simu_3.png",
     start:     [24, 40],
@@ -15,7 +15,7 @@
     goal:      [161, 111],
     angle_g:   0.125
     },
-  '22b':
+  '26b':
     {
     map_name:  "wall_simu_3.png",
     start:     [24, 40],
@@ -23,7 +23,7 @@
     goal:      [161, 111],
     angle_g:   0.25
     },
-  '22c':
+  '26c':
     {
     map_name:  "wall_simu_3.png",
     start:     [24, 40],
@@ -31,7 +31,7 @@
     goal:      [161, 111],
     angle_g:   0.375
     },
-  '22d':
+  '26d':
     {
     map_name:  "wall_simu_3.png",
     start:     [24, 40],
@@ -39,7 +39,7 @@
     goal:      [161, 111],
     angle_g:   0.5
     },
-  '22e':
+  '26e':
     {
     map_name:  "wall_simu_3.png",
     start:     [24, 40],
@@ -47,7 +47,7 @@
     goal:      [161, 111],
     angle_g:   0.625
     },
-  '22f':
+  '26f':
     {
     map_name:  "wall_simu_3.png",
     start:     [24, 40],
