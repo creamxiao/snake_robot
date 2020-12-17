@@ -3,33 +3,33 @@ This program is only for the configuration search for Paper "A Search-based Conf
 
 ## Prerequisites: ##
 **Linux** environment, **OpenCV** and **qpOASES** libraries installed.
-### OpenCV:
-I built this program with OpenCV 3.2. If you already have this version installed on you computer, congratulations. Otherwise, skip to [OpenCV installation instructions](#opencv-quick-installation). Remember to come back after you succeeded.
+### OpenCV: ###
+This program runs on OpenCV 3.X. If you already have this version installed on you computer, congratulations. Otherwise, skip to [OpenCV installation instructions](#opencv-quick-installation). Remember to come back after you succeeded.
 
-### qpOASES:
+The installation instruction of library **qpOASES** is in the next section.
+
+## Installation and Compilation of the program: ##
+### Installation: ###
+Simply download the whole repository of `snake_robot` to your local directory. For reviewers' convenience, the third party library [DOSL](https://github.com/subh83/DOSL) and [qpOASES](https://github.com/coin-or/qpOASES) are included in this repository. Hereafter we refer to (the full path of) this directory by `<snake_robot-dir>`.
+### qpOASES: ###
 The following steps are extracted from [qpOASES manual](https://www.coin-or.org/qpOASES/doc/3.2/manual.pdf). You can chech out the manual for more details.
-1. Download [qpOASES](https://github.com/coin-or/qpOASES). You obtained a zipped archive, unpack the archive.
-2. A new directory **qpOASES-3.2.1** will be created. From now on we refer to (the full path of) this directory (or the one you used to check out the latest stable branch) by `<qpOASES-dir>`. 
-3. Compilation of the qpOASES library **libqpOASES.a** and test examples:
+1. Since you have downloaded the included **qpOASES**, go to the folder by running this in terminal:
 ```
-    cd <qpOASES-dir>
+    cd <snake_robot-dir>/qpOASES-3.2.1
+```
+2. Compilation of the qpOASES library **libqpOASES.a** and test examples:
+```
     make
 ```
 This library libqpOASES.a provides the complete functionality of the qpOASES software package. It can be used by, e.g., linking it against a main function from the examples folder. The make also compiles a couple of test examples; executables are stored within the directory `<qpOASES-dir>/bin`.
 
-4. Running a simple test example:
+3. Running a simple test example:
 Among others, an executable called **example1** should have been created; run it in order to test your installation:
 ```
-    cd <qpOASES-dir>/bin
+    cd <snake_robot-dir>/qpOASES-3.2.1/bin
     ./example1
 ```
 If it terminates after successfully solving two QP problems, qpOASES has been successfully installed!
-
-## Installation and Compilation of the program: ##
-### Installation: ###
-Simply download the whole repository to your local directory. For user's convenience, the third party library [DOSL](https://github.com/subh83/DOSL) is included in this repository. Hereafter we refer to (the full path of) this directory by `<snake_robot-dir>`.
-
-You need to change the file `<snake_robot-dir>/makefile` prior to the compilation. Depending on where you installed qpOASES library, change the line 35 `BINDIR = <qpOASES-dir>/bin` into your qpOASES installed directory, for example `BINDIR = /home/xiaolong/Documents/qpOASES-3.2.1/bin`.
 
 ### Compilation: ###
 In terminal, go to the local folder where you put this repository 
