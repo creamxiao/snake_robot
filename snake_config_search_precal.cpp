@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 	string program_fName (argv[0]);
 	string program_folderName = program_fName.substr(0, program_fName.find_last_of("/\\")+1);
 
-	string expt_f_name = program_folderName + "exptfiles/experiments.json", expt_name = "21a";
+	string expt_f_name = program_folderName + "exptfiles/experiments.json", expt_name = "23a";
 
 	if (argc == 2) {
 		// expt_f_name = argv[1];
