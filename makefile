@@ -31,7 +31,7 @@ ifeq ($(UNAME_S),Linux)
 	CXXFLAGSQP = -Wall -pedantic -Wshadow -Wfloat-equal -O3 -Wconversion -Wsign-conversion -fPIC -DLINUX -D__USE_LONG_INTEGERS__ -D__USE_LONG_FINTS__ -D${DEF_SOLVER} -D__NO_COPYRIGHT__
 	# additional C++ Compiler options for linking (QP)
 	
-	# change this to your installed qpOASES directory, for example: BINDIR = /home/xiaolong/Documents/qpOASES-3.2.1/bin
+	# qpOASES directory
 	BINDIR = ./qpOASES-3.2.1/bin
 	
 	CXXLINKFLAGSQP = -L${BINDIR} -Wl,-rpath=${BINDIR} ${LINKHSL} -lqpOASES
