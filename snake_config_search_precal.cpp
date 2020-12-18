@@ -6,15 +6,11 @@
 #include <iostream>
 #include <fstream> // for output files
 #include <vector>
-#include <map>
-#include <unordered_map>
-#include <unordered_set>
 #include <math.h>
 #include <algorithm>
 //#include <opencv/cv.h>
 //#include <opencv/cvaux.h>
 //#include <opencv/highgui.h>
-#include <thread>
 #include <typeinfo>
 #include <ctime>
 #include <cstdlib>
@@ -64,14 +60,16 @@ vector<POINT> sk_cost;
 vector<POINT> sk_heu;
 vector<LINK> allLks;
 Point ** SkeletonMat;
+double MU;
+Mat original_map;
+string program_Name;
 
 struct timespec start_time, finish_time;
 
-void skeleton_generator(string expt_f_name, string expt_name, string map_name, POINT s, double s_theta, POINT g){
+void skeleton_generator(const Mat & search_map, POINT s, double s_theta, POINT g){
   vector <POINT> landmarks;
-  cout << "reading map '" << map_name << "'" << endl;
-  // set the landmarks
 
+  // set the landmarks
   //landmarks.push_back(s);
   landmarks.push_back(POINT(s.x + (2 * AA) * cos(s_theta), s.y + (2 * AA) * sin(s_theta)));
 
@@ -91,7 +89,7 @@ void skeleton_generator(string expt_f_name, string expt_name, string map_name, P
 
   // last search section
   printf("skeleton search from (%g, %g) to (%g, %g)\n", landmarks.back().x, landmarks.back().y, g.x, g.y);
-  searchSkeleton shortest_search(expt_f_name, expt_name, landmarks.back(), g);
+  searchSkeleton shortest_search(search_map, landmarks.back(), g);
   shortest_search.search();
 
   printf("shortest path search: start point: (%g, %g), goal point (%g, %g)\n", landmarks.back().x, landmarks.back().y, g.x, g.y);
@@ -161,32 +159,136 @@ void skeleton_generator(string expt_f_name, string expt_name, string map_name, P
   char fileName[1024];
   time_t now = time(0);
 	tm* localtm = localtime(&now);
-  sprintf(fileName, "outfiles/%d_%d_%d_%d_%d_shortest_search.png", 1900 + localtm->tm_year, 1 + localtm->tm_mon, localtm->tm_mday, localtm->tm_hour, localtm->tm_min);
+  cout << "Program name: " << program_Name << endl;
+  sprintf(fileName, "outfiles/%s_%d_%d_%d_%d_%d_%d_shortest_search.png",
+          program_Name,
+          1900 + localtm->tm_year,
+          1 + localtm->tm_mon,
+          localtm->tm_mday,
+          localtm->tm_hour,
+          localtm->tm_min,
+          localtm->tm_sec);
 
   // imwrite(fileName, shortest_search.realtime_display);
   imshow("Display window", shortest_search.realtime_display);
   cout << "Reference path is shown. Press any key to continue" << endl;
   cvWaitKey();
+
   // destroyWindow("Reference path");
+}
+
+
+void findLowCostZone(const Mat & input_canvas, Mat & output_canvas){
+  vector<Point> CC_points;
+  vector<Point> CC_B_dir;
+  // find convex corner point
+
+  Point whiteP, blackP;
+  for(int i = 1; i < (input_canvas.cols - 1); i++){
+    for(int j = 1; j < (input_canvas.rows - 1); j++){
+      // if the pixel is white or red
+      if (input_canvas.at<Vec3b>(j, i) == Vec3b(255, 255, 255)
+        || input_canvas.at<Vec3b>(j, i) == Vec3b(0, 0, 255)) continue;
+
+      // reset sum
+      whiteP = Point(0, 0);
+      blackP = Point(0, 0);
+      // check up, down, left, right pixels
+      for(int a = -1; a <= 1; a++){
+        for(int b = -1; b <= 1; b++){
+          if (abs(a) == abs(b)) continue;
+          if (input_canvas.at<Vec3b>(j + b, i + a) == Vec3b(255, 255, 255)){
+            whiteP += Point(a, b);
+          }else if (input_canvas.at<Vec3b>(j + b, i + a) == Vec3b(0, 0, 0)){
+            blackP += Point(a, b);
+          }
+        }
+      }
+      if (abs(whiteP.x) == 1 && abs(whiteP.y) == 1
+        && abs(blackP.x) == 1 && abs(blackP.y) == 1){
+        CC_points.push_back(Point(i, j));
+        CC_B_dir.push_back(blackP);
+      }
+    }
+  }
+
+  output_canvas = input_canvas.clone();
+
+  // color with cyan
+  for(int i = 0; i < CC_points.size(); i++){
+    // color the surrounding pixels
+    for(int a = 0; a <= 2; a++){
+      for(int b = 0; b <= 2; b++){
+        if (input_canvas.at<Vec3b>(CC_points[i].y - CC_B_dir[i].y * b,
+                                  CC_points[i].x - CC_B_dir[i].x * a) == Vec3b(255, 255, 255))
+          output_canvas.at<Vec3b>(CC_points[i].y - CC_B_dir[i].y * b,
+                                  CC_points[i].x - CC_B_dir[i].x * a) = Vec3b(255, 255, 0);
+      }
+    }
+
+    // color in x direction
+    for(int a = CC_points[i].x + CC_B_dir[i].x; ; a+=CC_B_dir[i].x){
+      if (input_canvas.at<Vec3b>(CC_points[i].y, a) == Vec3b(0, 0, 0)){
+        int b;
+        for(b = 1; b <= 2; b++){
+          if (input_canvas.at<Vec3b>(CC_points[i].y - CC_B_dir[i].y * b, a) == Vec3b(255, 255, 255)){
+            output_canvas.at<Vec3b>(CC_points[i].y - CC_B_dir[i].y * b, a) = Vec3b(255, 255, 0);
+          }else if (b == 1){
+            break;
+          }
+        }
+        // if no white pixel
+        if (b == 1) break;
+      }else{ // if no black pixel
+        break;
+      }
+    }
+
+    // color in y direction
+    for(int a = CC_points[i].y + CC_B_dir[i].y; ; a+=CC_B_dir[i].y){
+      if (input_canvas.at<Vec3b>(a, CC_points[i].x) == Vec3b(0, 0, 0)){
+        int b;
+        for(b = 1; b <= 2; b++){
+          if (input_canvas.at<Vec3b>(a, CC_points[i].x - CC_B_dir[i].x * b) == Vec3b(255, 255, 255)){
+            output_canvas.at<Vec3b>(a, CC_points[i].x - CC_B_dir[i].x * b) = Vec3b(255, 255, 0);
+          }else if (b == 1){
+            break;
+          }
+        }
+        // if no white pixel
+        if (b == 1) break;
+      }else{ // if no black pixel
+        break;
+      }
+    }
+  }
 }
 
 int main(int argc, char *argv[])
 {
-	string program_fName (argv[0]);
+	string program_fName(argv[0]);
 	string program_folderName = program_fName.substr(0, program_fName.find_last_of("/\\")+1);
 
 	string expt_f_name = program_folderName + "exptfiles/experiments.json", expt_name = "23a";
 
-	if (argc == 2) {
+	if (argc > 1) {
 		// expt_f_name = argv[1];
 		expt_name = argv[1];
 	}
 
+  MU = default_MU;
+  if (argc > 2){
+    MU = stod(argv[2]);
+  }
+  program_Name = argv[0];
   // Read from file
   ifstream my_fstream (expt_f_name);
   RSJresource expt_container = RSJresource (my_fstream)[expt_name];
   LINK myStartLink(expt_container["goal"][0].as<int>(), expt_container["goal"][1].as<int>(), (expt_container["angle_g"].as<double>() + 1) * PI, 0);
   LINK myGoalLink(expt_container["start"][0].as<int>(), expt_container["start"][1].as<int>(), (expt_container["angle_s"].as<double>() + 1) * PI, 0);
+
+  cout << "Reading map '" << expt_container["map_name"].as<string>() << "'" << endl;
+  original_map = imread("exptfiles/" + expt_container["map_name"].as<string>(), CV_LOAD_IMAGE_COLOR);
 
   printf("myStartLink = LINK(%g, %g, %g, %g)\n", myStartLink.x, myStartLink.y, myStartLink.theta, myStartLink.expansion);
   printf("myGoalLink = LINK(%g, %g, %g, %g)\n",  myGoalLink.x, myGoalLink.y, myGoalLink.theta, myGoalLink.expansion);
@@ -196,13 +298,23 @@ int main(int argc, char *argv[])
     return 0;
   }else{
     cout << "Now searching for Figure " << expt_name << endl;
+    cout << "mu = " << MU << endl;
   }
 
+  Mat CC_PointRecognition;
+  findLowCostZone(original_map, CC_PointRecognition);
+  // resize(CC_PointRecognition, CC_PointRecognition, Size(), PLOT_SCALE, PLOT_SCALE, INTER_NEAREST);
+  // imshow("Display window", CC_PointRecognition);
+  // cvWaitKey();
+
   // set the sk_cost
-  skeleton_generator(expt_f_name, expt_name, expt_container["map_name"].as<std::string>(), myStartLink.getPoint(), myStartLink.theta, myGoalLink.getPoint());
+  skeleton_generator(CC_PointRecognition,
+                    myStartLink.getPoint(),
+                    myStartLink.theta,
+                    myGoalLink.getPoint());
 
   // Configuration search from the drilling point
-	searchLINK searchInstance_1(expt_f_name, expt_name, program_folderName + "outfiles/", myStartLink, myGoalLink, 0); // last parameter 0 = force balance mode
+	searchLINK searchInstance_1(myStartLink, myGoalLink, 0); // last parameter 0 = force balance mode
   searchInstance_1.drillLink = LINK(expt_container["goal"][0].as<int>(), expt_container["goal"][1].as<int>(), expt_container["angle_g"].as<double>() * PI, 0);
 	searchInstance_1.search();
 
@@ -213,7 +325,7 @@ int main(int argc, char *argv[])
     path = searchInstance_1.reconstructPointerPath(searchInstance_1.paths.back());
   }else{
     cout << "Search 1 never reached the goal!" << endl;
-    sprintf(imgFname, "outfiles/%s_C4_%g_debug_search_1.png", argv[0], C4);
+    sprintf(imgFname, "outfiles/%s_MU_%g_debug_search_1.png", argv[0], MU);
     imwrite(imgFname, searchInstance_1.realtime_display);
 
     imshow("Display window", searchInstance_1.realtime_display);
@@ -318,12 +430,13 @@ int main(int argc, char *argv[])
 
   time_t now = time(0);
   tm* localtm = localtime(&now);
-  sprintf(imgFname, "outfiles/%s_%d_%d_%d_%d_%d_C4_%g_1st_search_duration_%d_mins_%d_secs_%s.png", argv[0],
+  sprintf(imgFname, "outfiles/%s_%d_%d_%d_%d_%d_%d_MU_%g_1st_search_duration_%d_mins_%d_secs_%s.png", argv[0],
           1900 + localtm->tm_year,
           1 + localtm->tm_mon,
           localtm->tm_mday,
           localtm->tm_hour,
-          localtm->tm_min, C4,
+          localtm->tm_min,
+          localtm->tm_sec, MU,
           (int)floor(searchInstance_1.searchDuration / 60.0),
           (int)ceil(searchInstance_1.searchDuration) % 60, _OS_FLAG == 1? "Linux" : "Mac");
   double search_1_duration = searchInstance_1.searchDuration;
@@ -339,6 +452,7 @@ int main(int argc, char *argv[])
           localtm->tm_hour,
           localtm->tm_min, _OS_FLAG == 1? "Linux" : "Mac");
   forceFile.open(imgFname);
+  forceFile << "Figure " << expt_name << ", Drilling angle: " << expt_container["angle_g"].as<double>()  << " PI" << endl;
 
   forceFile << "Pre-calculation costs: "
             << searchInstance_1.preCalDuration<< " sec(s)" << endl;
@@ -351,7 +465,7 @@ int main(int argc, char *argv[])
   cvWaitKey(1);
 
   // path 2 searching
-  searchLINK searchInstance_2(expt_f_name, expt_name, program_folderName + "outfiles/", allLks.back(), myGoalLink, 1); // last parameter 1 = full AA star without projection
+  searchLINK searchInstance_2(allLks.back(), myGoalLink, 1); // last parameter 1 = full AA star without projection
   //searchInstance_2.realtime_display = searchInstance_1.realtime_display;
   cout << "For search 2" << endl;
   printf("myStartLink = LINK(%g, %g, %g, %g)\n", searchInstance_2.startLink.x, searchInstance_2.startLink.y, searchInstance_2.startLink.theta, searchInstance_2.startLink.expansion);
@@ -361,7 +475,7 @@ int main(int argc, char *argv[])
   cout << "Path 2 searching accomplished, " << searchInstance_1.expand_count + searchInstance_2.expand_count << " vertices have been expanded in total!" << endl;
   if(searchInstance_2.paths.empty()){
     cout << "Didn't found valid path 2!\nSearching ended." << endl;
-    sprintf(imgFname, "outfiles/%s_C4_%g_debug_search_2.png", argv[0], C4);
+    sprintf(imgFname, "outfiles/%s_MU_%g_debug_search_2.png", argv[0], MU);
     imwrite(imgFname, searchInstance_2.realtime_display);
 
     imshow("Display window", searchInstance_2.realtime_display);
@@ -435,12 +549,13 @@ int main(int argc, char *argv[])
 
 	now = time(0);
 	localtm = localtime(&now);
-	sprintf(imgFname, "outfiles/%s_%d_%d_%d_%d_%d_C4_%g_2nd_search_duration_%d_mins_%d_secs_%s.png", argv[0],
+	sprintf(imgFname, "outfiles/%s_%d_%d_%d_%d_%d_%d_MU_%g_2nd_search_duration_%d_mins_%d_secs_%s.png", argv[0],
           1900 + localtm->tm_year,
           1 + localtm->tm_mon,
           localtm->tm_mday,
           localtm->tm_hour,
-          localtm->tm_min, C4,
+          localtm->tm_min,
+          localtm->tm_sec, MU,
           (int)floor((searchInstance_2.searchDuration + searchInstance_1.searchDuration) / 60.0),
           (int)ceil(searchInstance_2.searchDuration + searchInstance_1.searchDuration) % 60, _OS_FLAG == 1? "Linux" : "Mac");
 	imwrite(regex_replace(regex_replace(imgFname, regex("\n"), ""), regex(":"), "_"), searchInstance_2.realtime_display);
@@ -509,7 +624,15 @@ int main(int argc, char *argv[])
 	searchInstance_2.cvPlotPoint(forpaper, cv_plot_coord(searchInstance_1.startLink.x, searchInstance_1.startLink.y), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
 	searchInstance_2.cvPlotPoint(forpaper, cv_plot_coord(searchInstance_2.goalLink.x, searchInstance_2.goalLink.y), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
 
-  sprintf(imgFname, "outfiles/%s_%d_%d_%d_%d_%d_forPaper_%s.png", argv[0], 1900 + localtm->tm_year, 1 + localtm->tm_mon, localtm->tm_mday, localtm->tm_hour, localtm->tm_min, _OS_FLAG == 1? "Linux" : "Mac");
+  sprintf(imgFname, "outfiles/%s_%d_%d_%d_%d_%d_%d_forPaper_%s.png",
+          program_Name,
+          1900 + localtm->tm_year,
+          1 + localtm->tm_mon,
+          localtm->tm_mday,
+          localtm->tm_hour,
+          localtm->tm_min,
+          localtm->tm_sec,
+          _OS_FLAG == 1? "Linux" : "Mac");
 	imwrite(regex_replace(regex_replace(imgFname, regex("\n"), ""), regex(":"), "_"), forpaper);
 	imshow("Display window", forpaper);
 	cout << "Press any key to save and exit" << endl;
@@ -518,7 +641,6 @@ int main(int argc, char *argv[])
   // ================================================================================================================
 
 
-  forceFile << imgFname << endl << endl; // title line
   forceFile << "In World Coordinate System (WCS), positive y goes downwards; in LINK Coordinate System (LCS) for both ends, positive x goes towards the center of the link, positive y goes clockwise lateral; positive torque in both systems goes inwards the screen\nIndex of LINK starting from the head of the robot, data format: (force in X LCS (N), force in Y LCS (N), torque (Nm)) (force in X WCS (N), force in Y WCS (N), torque (Nm))" << endl << endl;
 
   GRAVITYDIR;
