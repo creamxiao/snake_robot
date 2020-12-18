@@ -19,6 +19,9 @@ extern vector<POINT> sk_cost;
 extern vector<POINT> sk_heu;
 extern vector<LINK> allLks;
 extern Point ** SkeletonMat;
+extern double MU;
+extern Mat original_map;
+extern string program_Name;
 
 class SEG {
 public:
@@ -45,7 +48,6 @@ public:
 	string map_image_fName, expt_fName, expt_folderName, expt_Name, out_folderName;
 	char out_Name[1024];
 	RSJresource expt_container;
-  Mat original_map;
   Mat color_map;
 	Mat grey_map;
 
@@ -138,27 +140,12 @@ public:
   }
 
 	//constructor
-	searchLINK(string expt_f_name, string expt_name, string out_folder_name, LINK startL, LINK goalL, int modeInput){
-
-		expt_fName = expt_f_name;
-		expt_Name = expt_name;
-		out_folderName = out_folder_name;
-		expt_folderName = expt_fName.substr(0, expt_fName.find_last_of("/\\")+1);
+	searchLINK(LINK startL, LINK goalL, int modeInput){
 
 		flagmin = -1;
     SAVE_FLAG = 0;
 
-		cout << "start reading RSJresource" << endl;
-		// Read from file
-		ifstream my_fstream (expt_fName);
-		expt_container = RSJresource (my_fstream)[expt_Name];
-		map_image_fName = expt_folderName + expt_container["map_name"].as<string>();
-		//grey_map = cvParseMap2d(map_image_fName, false); // computes representative points
-
-		cout << "map loading complete" << endl;
-
 		// read data for planning
-    original_map = imread(map_image_fName, CV_LOAD_IMAGE_COLOR);
     MIN_X = 0;
 		MAX_X = original_map.cols;
 		MIN_Y = 0;
@@ -225,12 +212,13 @@ public:
 	    tm* localtm = localtime(&now);
       printf("completed! Pre-cal time: %g\nPress any key to start searching for the bracing configuration\n", preCalDuration);
       imshow("Display window", pre_result);
-      imwrite("outfiles/"
+      imwrite("outfiles/" + program_Name + "_"
               + to_string(1900 + localtm->tm_year) + "_"
               + to_string(1 + localtm->tm_mon) + "_"
               + to_string(localtm->tm_mday) + "_"
               + to_string(localtm->tm_hour) + "_"
-              + to_string(localtm->tm_min) + "_shortest_search.png", pre_result);
+              + to_string(localtm->tm_min) + "_"
+              + to_string(localtm->tm_sec) + "_shortest_search.png", pre_result);
       cvWaitKey();
       cout << "Started..." << endl;
       // destroyWindow("Precalculation");
@@ -377,7 +365,7 @@ public:
     return false;
   }
 
-  bool ChkPthSelf_tangle(vector<LINK> inputPath){
+  bool IsPathSelfTangled(vector<LINK> inputPath){
 
     vector<POINT> path;
     for(auto it : inputPath){
@@ -897,7 +885,7 @@ public:
       //cout <<"Closest point of n: " << n.iClosestP_cost << endl;
 
       //A-star
-      for(double i = 0.0; i <= 1; i+=EL){//expanding length: 0, 0.25, 0.5, 0.75, 1.0
+      for(double i = 0.0; i <= 1; i+=EL){//expanding length: 0, 0.5, 1.0
         for (int j = -2; j <= 2; j++){
           display = false;
           //cout << "getting successor in the 1st search" << endl;
@@ -1152,6 +1140,29 @@ public:
           if (headingBack < INFINITESIMAL_DOUBLE) return false;
         }
 
+        // reject segments that have no feasible successor
+        bool haveFeasibleSuc = false;
+        LINK tn;
+        for(double i = 0.0; i <= 1; i+=(EL/2)){//expanding length: 0, 0.25, 0.5, 0.75, 1.0
+          for (int j = -2; j <= 2; j++){
+            //new position
+            tn.x = n.x + (AA * 2 + n.expansion * L) * cos(n.theta);
+            tn.y = n.y + (AA * 2 + n.expansion * L) * sin(n.theta);
+            //new orientation
+            tn.theta = n.theta + (double)j * 22.5 / 180 * PI;
+            tn.expansion = i;
+
+            if (!isLinkAccessible(tn, n) && !tn.reachGoal(goalLink)){
+              // if succssor hits wall and doesn't go through the goal
+              continue;
+            }
+            haveFeasibleSuc = true;
+            break;
+          }
+          if (haveFeasibleSuc) break;
+        }
+        if (!haveFeasibleSuc) return false;
+
         if (forceSpanningCheck(n, false)){
           if(forceSpanningCheck(n, true)) {
             // Reconstruct the path with the previous link
@@ -1160,7 +1171,7 @@ public:
             for (int i = p.size() - 1; i >= 0; i--)
               pathLks.push_back(* p[i]);
 
-            if (ChkPthSelf_tangle(pathLks)) return false;
+            if (IsPathSelfTangled(pathLks)) return false;
 
 
             clock_gettime(CLOCK_MONOTONIC, &finish_time);
