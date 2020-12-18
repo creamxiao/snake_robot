@@ -49,10 +49,10 @@ public:
       startNode = startP;
       goalNode = goalP;
 
-      cvtColor(search_map, grey_map, CV_RGB2GRAY);
-      threshold(grey_map, grey_map, 20, 255, 0);
-      cvtColor(grey_map, grey_map, CV_GRAY2RGB);
-      resize(grey_map, realtime_display, Size(), PLOT_SCALE, PLOT_SCALE, INTER_NEAREST);
+      // cvtColor(search_map, grey_map, CV_RGB2GRAY);
+      // threshold(grey_map, grey_map, 20, 255, 0);
+      // cvtColor(grey_map, grey_map, CV_GRAY2RGB);
+      resize(input_search_map, realtime_display, Size(), PLOT_SCALE, PLOT_SCALE, INTER_NEAREST);
     }
 
     // -----------------------------------------------------------
