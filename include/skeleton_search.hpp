@@ -13,10 +13,7 @@
 //class searchSkeleton : public DOSL_CLASS(Problem)<POINT,double>
 class searchSkeleton : public AStar::Algorithm<searchSkeleton, POINT, double>{
 public:
-    // Fime names and JSON objects
-    std::string map_image_fName, expt_fName, expt_folderName, expt_Name;
-    RSJresource expt_container;
-    Mat original_map, grey_map;
+    Mat search_map, grey_map;
 
     // Image display variables / parameters
     Mat realtime_display;
@@ -41,29 +38,21 @@ public:
     }
 
     // Constructor
-    searchSkeleton (std::string expt_f_name, std::string expt_name, POINT startP, POINT goalP)
+    searchSkeleton (const Mat & input_search_map, POINT startP, POINT goalP)
     {
-        expt_fName = expt_f_name; expt_Name = expt_name;
-        expt_folderName = expt_fName.substr(0, expt_fName.find_last_of("/\\")+1);
+      search_map = input_search_map.clone();
+      // read data for planning
+      MAX_X = search_map.size().width;
+      MIN_X = 0;
+      MAX_Y = search_map.size().height;
+      MIN_Y = 0;
+      startNode = startP;
+      goalNode = goalP;
 
-        // Read from file
-        std::ifstream my_fstream (expt_fName);
-        expt_container = RSJresource (my_fstream)[expt_Name];
-        map_image_fName = expt_folderName + expt_container["map_name"].as<std::string>();
-        original_map = imread(map_image_fName, CV_LOAD_IMAGE_COLOR); // second parameter computes representative points
-
-        // read data for planning
-        MAX_X = original_map.size().width;
-        MIN_X = 0;
-        MAX_Y = original_map.size().height;
-        MIN_Y = 0;
-        startNode = startP;
-        goalNode = goalP;
-
-        cvtColor(original_map, grey_map, CV_RGB2GRAY);
-        threshold(grey_map, grey_map, 20, 255, 0);
-        cvtColor(grey_map, grey_map, CV_GRAY2RGB);
-    		resize(grey_map, realtime_display, Size(), PLOT_SCALE, PLOT_SCALE, INTER_NEAREST);
+      cvtColor(search_map, grey_map, CV_RGB2GRAY);
+      threshold(grey_map, grey_map, 20, 255, 0);
+      cvtColor(grey_map, grey_map, CV_GRAY2RGB);
+      resize(grey_map, realtime_display, Size(), PLOT_SCALE, PLOT_SCALE, INTER_NEAREST);
     }
 
     // -----------------------------------------------------------
@@ -75,7 +64,7 @@ public:
 
     bool isPOINTAccessible (const POINT & tn) {
       if (!isNodeInWorkspace(tn))  return (false);
-      if (original_map.at<Vec3b>((int)round(tn.y), (int)round(tn.x)).val[0] <= OBSTHRESHOLD) return false; // red
+      if (search_map.at<Vec3b>((int)round(tn.y), (int)round(tn.x)).val[0] <= OBSTHRESHOLD) return false; // red
 
       return (true);
     }
@@ -100,7 +89,7 @@ public:
           s->push_back(tn);
           double dx = tn.x - n.x, dy = tn.y - n.y, op = 1.0;
 
-          if (original_map.at<Vec3b>((int)round(tn.y), (int)round(tn.x)).val[2] < 200){
+          if (search_map.at<Vec3b>((int)round(tn.y), (int)round(tn.x)).val[2] < 200){
             op = 0.4;
             // printf("get a cost discount at (%g, %g)\n", round(tn.x), round(tn.y));
           }

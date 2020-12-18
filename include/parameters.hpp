@@ -1,14 +1,14 @@
 #ifndef PARA
 #define PARA
 
-#define map_selection 1 //choose map
+#define scale_select 1 //choose scale
 
 #define C1 1.0 // coefficient of lenth term in the cost function
 #define C2 2.0 // coefficient of torque term in the cost function
 #define C3 2.0 // coefficient of touching wall term in the cost function
 #define C4 0.3 // coefficient of heuristic function
 
-#if map_selection == 1
+#if scale_select == 1
   #define OBSTHRESHOLD 100
   #define PLOT_SCALE 3
   #define VERTEX_SIZE 1
@@ -29,7 +29,7 @@
 // physic/mechanic parameters
 #define MAXFORCE 750
 #define DRILLFORCE 250
-#define MU 0.3 // friction coefficient
+#define default_MU 0.3 // friction coefficient
 #define LINKMASS 0.5 // in kg
 #define HEADMASS 1 // in kg
 #define MAXTORQUE 65 // Nm
