@@ -179,6 +179,11 @@ void skeleton_generator(const Mat & search_map, POINT s, double s_theta, POINT g
 
 
 void findLowCostZone(const Mat & input_canvas, Mat & output_canvas){
+  // remove read part
+  cvtColor(input_canvas, output_canvas, CV_RGB2GRAY);
+  threshold(output_canvas, output_canvas, 20, 255, 0);
+  cvtColor(output_canvas, output_canvas, CV_GRAY2RGB);
+
   vector<Point> CC_points;
   vector<Point> CC_B_dir;
   // find convex corner point
@@ -211,8 +216,6 @@ void findLowCostZone(const Mat & input_canvas, Mat & output_canvas){
       }
     }
   }
-
-  output_canvas = input_canvas.clone();
 
   // color with cyan
   for(int i = 0; i < CC_points.size(); i++){
@@ -445,12 +448,13 @@ int main(int argc, char *argv[])
   // record force and torque acting on each end of the links
 
   ofstream forceFile;
-  sprintf(imgFname, "outfiles/%s_%d_%d_%d_%d_%d_force analysis_%s.txt", argv[0],
+  sprintf(imgFname, "outfiles/%s_%d_%d_%d_%d_%d_%d_force analysis_%s.txt", argv[0],
           1900 + localtm->tm_year,
           1 + localtm->tm_mon,
           localtm->tm_mday,
           localtm->tm_hour,
-          localtm->tm_min, _OS_FLAG == 1? "Linux" : "Mac");
+          localtm->tm_min,
+          localtm->tm_sec, _OS_FLAG == 1? "Linux" : "Mac");
   forceFile.open(imgFname);
   forceFile << "Figure " << expt_name << ", Drilling angle: " << expt_container["angle_g"].as<double>()  << " PI" << endl;
 
@@ -625,7 +629,7 @@ int main(int argc, char *argv[])
 	searchInstance_2.cvPlotPoint(forpaper, cv_plot_coord(searchInstance_2.goalLink.x, searchInstance_2.goalLink.y), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
 
   sprintf(imgFname, "outfiles/%s_%d_%d_%d_%d_%d_%d_forPaper_%s.png",
-          program_Name,
+          argv[0],
           1900 + localtm->tm_year,
           1 + localtm->tm_mon,
           localtm->tm_mday,
@@ -728,7 +732,14 @@ int main(int argc, char *argv[])
 
   // record force and torque acting on each end of the links
   ofstream configFile;
-  sprintf(imgFname, "outfiles/%s_%d_%d_%d_%d_%d_configuration.txt", argv[0], 1900 + localtm->tm_year, 1 + localtm->tm_mon, localtm->tm_mday, localtm->tm_hour, localtm->tm_min);
+  sprintf(imgFname, "outfiles/%s_%d_%d_%d_%d_%d_%d_configuration.txt",
+          argv[0],
+          1900 + localtm->tm_year,
+          1 + localtm->tm_mon,
+          localtm->tm_mday,
+          localtm->tm_hour,
+          localtm->tm_min,
+          localtm->tm_sec);
   configFile.open(imgFname);
   configFile << imgFname << endl << endl; // title line
   configFile << "Data format: x, y, theta, expansion" << endl << endl;
