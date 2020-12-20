@@ -210,7 +210,8 @@ public:
 
       time_t now = time(0);
 	    tm* localtm = localtime(&now);
-      printf("completed! Pre-cal time: %g\nPress any key to start searching for the bracing configuration\n", preCalDuration);
+      printf("completed! Pre-cal time: %g\nPress any key to start searching for the bracing configuration\n",
+              preCalDuration);
       imshow("Display window", pre_result);
       imwrite("outfiles/" + program_Name + "_"
               + to_string(1900 + localtm->tm_year) + "_"
@@ -229,14 +230,16 @@ public:
 		//resize(realtime_display, realtime_display, Size(), PLOT_SCALE, PLOT_SCALE, INTER_NEAREST);
 
 		// plot start link and goal point
-		cvPlotPoint(realtime_display, cv_plot_coord(startLink.x, startLink.y), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
-		cvPlotPoint(realtime_display, cv_plot_coord(goalLink.x, goalLink.y), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
+		cvPlotPoint(realtime_display, cv_plot_coord(startLink), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
+		cvPlotPoint(realtime_display, cv_plot_coord(goalLink), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
 
 		//namedWindow( "Display window", WINDOW_AUTOSIZE);
 		//imshow("Display window", realtime_display);
 		//waitKey(0);
-    line(realtime_display, cv_plot_coord(startLink.x, startLink.y),
-			cv_plot_coord((startLink.x + (startLink.expansion * L + AA * 2) * cos(startLink.theta)), (startLink.y + (startLink.expansion * L + AA * 2) * sin(startLink.theta))), CV_RGB(200, 200, 200), LINE_THICKNESS);
+    line(realtime_display,
+        cv_plot_coord(startLink),
+			  cv_plot_coord(startLink.getHead()),
+        CV_RGB(200, 200, 200), LINE_THICKNESS);
 
 		clock_gettime(CLOCK_MONOTONIC, &start_time);
 	}
@@ -281,7 +284,8 @@ public:
       }
     }
     else {
-      printf("Error! The points constructing the segment overlap! POINT1:(%2lf, %2lf) POINT2:(%2lf, %2lf)\n", seg.pt1.x, seg.pt1.y, seg.pt2.x, seg.pt2.y);
+      printf("Error! The points constructing the segment overlap! POINT1:(%2lf, %2lf) POINT2:(%2lf, %2lf)\n",
+              seg.pt1.x, seg.pt1.y, seg.pt2.x, seg.pt2.y);
     }
 
     return false;
@@ -329,7 +333,8 @@ public:
 
     double x, y;
     //dominator
-    double dom = ((seg1.pt2.y - seg1.pt1.y) * (seg2.pt2.x - seg2.pt1.x) - (seg2.pt2.y - seg2.pt1.y) * (seg1.pt2.x - seg1.pt1.x));
+    double dom = ((seg1.pt2.y - seg1.pt1.y) * (seg2.pt2.x - seg2.pt1.x)
+                - (seg2.pt2.y - seg2.pt1.y) * (seg1.pt2.x - seg1.pt1.x));
 
     //if parallel
     if (dom == 0) {
@@ -338,8 +343,10 @@ public:
         CheckPtStatus(seg2, seg1.pt1, true) == 2 || CheckPtStatus(seg2, seg1.pt2, true) == 2) {
         return true;
       }
-      else if (((seg1.pt1.x == seg2.pt1.x && seg1.pt1.y == seg2.pt1.y) && (seg1.pt2.x == seg2.pt2.x && seg1.pt2.y == seg2.pt2.y)) ||
-        ((seg1.pt1.x == seg2.pt2.x && seg1.pt1.y == seg2.pt2.y) && (seg1.pt2.x == seg2.pt1.x && seg1.pt2.y == seg2.pt1.y))){
+      else if (((seg1.pt1.x == seg2.pt1.x && seg1.pt1.y == seg2.pt1.y)
+              && (seg1.pt2.x == seg2.pt2.x && seg1.pt2.y == seg2.pt2.y))
+            || ((seg1.pt1.x == seg2.pt2.x && seg1.pt1.y == seg2.pt2.y)
+              && (seg1.pt2.x == seg2.pt1.x && seg1.pt2.y == seg2.pt1.y))){
         //if identical with the other segment
         return true;
       }
@@ -349,12 +356,16 @@ public:
 
     //if not parallel
     //coordinates of intersection point
-    x = (((seg1.pt2.y - seg1.pt1.y) * seg1.pt1.x - (seg1.pt2.x - seg1.pt1.x) * seg1.pt1.y) * (seg2.pt2.x - seg2.pt1.x)
-      - ((seg2.pt2.y - seg2.pt1.y) * seg2.pt1.x - (seg2.pt2.x - seg2.pt1.x) * seg2.pt1.y) * (seg1.pt2.x - seg1.pt1.x))
+    x = (((seg1.pt2.y - seg1.pt1.y) * seg1.pt1.x - (seg1.pt2.x - seg1.pt1.x) * seg1.pt1.y)
+          * (seg2.pt2.x - seg2.pt1.x)
+      - ((seg2.pt2.y - seg2.pt1.y) * seg2.pt1.x - (seg2.pt2.x - seg2.pt1.x) * seg2.pt1.y)
+          * (seg1.pt2.x - seg1.pt1.x))
       / dom;
 
-    y = (((seg2.pt2.y - seg2.pt1.y) * seg2.pt1.x - (seg2.pt2.x - seg2.pt1.x) * seg2.pt1.y) * (seg1.pt2.y - seg1.pt1.y)
-      - ((seg1.pt2.y - seg1.pt1.y) * seg1.pt1.x - (seg1.pt2.x - seg1.pt1.x) * seg1.pt1.y) * (seg2.pt2.y - seg2.pt1.y))
+    y = (((seg2.pt2.y - seg2.pt1.y) * seg2.pt1.x - (seg2.pt2.x - seg2.pt1.x) * seg2.pt1.y)
+          * (seg1.pt2.y - seg1.pt1.y)
+      - ((seg1.pt2.y - seg1.pt1.y) * seg1.pt1.x - (seg1.pt2.x - seg1.pt1.x) * seg1.pt1.y)
+          * (seg2.pt2.y - seg2.pt1.y))
       / (-dom);
 
 
@@ -440,12 +451,14 @@ public:
     //check if any pixel beside the link is obsessed by wall
     for(double i = 3; i < (n.expansion * L + AA * 2 - 3); i++){
 			if (grey_map.at<uchar>((int)round(n.y + i * sin(n.theta) + range * sin(n.theta - 0.5 * PI)),
-                            (int)round(n.x + i * cos(n.theta) + range * cos(n.theta - 0.5 * PI))) <= OBSTHRESHOLD){//left side
+                            (int)round(n.x + i * cos(n.theta) + range * cos(n.theta - 0.5 * PI))) <= OBSTHRESHOLD){
+        //left side
         if (first_left == -1) first_left = i;//record the first touch
         if (last_left < i) last_left = i;
       }
       if (grey_map.at<uchar>((int)round(n.y + i * sin(n.theta) + range * sin(n.theta + 0.5 * PI)),
-                            (int)round(n.x + i * cos(n.theta) + range * cos(n.theta + 0.5 * PI))) <= OBSTHRESHOLD){//right side
+                            (int)round(n.x + i * cos(n.theta) + range * cos(n.theta + 0.5 * PI))) <= OBSTHRESHOLD){
+        //right side
         if (first_right == -1) first_right = i;
         if (last_right < i) last_right = i;
       }
@@ -457,9 +470,12 @@ public:
       double new_x = n.x + (first_left + last_left) / 2 * cos(n.theta) + range * cos(n.theta - 0.5 * PI);
       double new_y = n.y + (first_left + last_left) / 2 * sin(n.theta) + range * sin(n.theta - 0.5 * PI);
       if (!n.forces.empty()){ //check if it has forces record
-        if (fabs(n.forces.rbegin()[1][0] - cos(n.theta + 0.5 * PI)) < INFINITESIMAL_DOUBLE && fabs(n.forces.rbegin()[1][1] - sin(n.theta + 0.5 * PI)) < INFINITESIMAL_DOUBLE
-          && fabs((new_x - n.forces.rbegin()[1][2]) * sin(n.theta) - (new_y - n.forces.rbegin()[1][3]) * cos(n.theta)) < INFINITESIMAL_DOUBLE){
-          // if the last normal force has the same direction with the new one and whether the wire between two touching points is parallel with the new link
+        if (fabs(n.forces.rbegin()[1][0] - cos(n.theta + 0.5 * PI)) < INFINITESIMAL_DOUBLE
+          && fabs(n.forces.rbegin()[1][1] - sin(n.theta + 0.5 * PI)) < INFINITESIMAL_DOUBLE
+          && fabs((new_x - n.forces.rbegin()[1][2]) * sin(n.theta)
+                - (new_y - n.forces.rbegin()[1][3]) * cos(n.theta)) < INFINITESIMAL_DOUBLE){
+          // if the last normal force has the same direction with the new one
+          // and whether the wire between two touching points is parallel with the new link
           last_x = n.forces.back()[2];
           last_y = n.forces.back()[3];
           last_s_n = n.forces.rbegin()[1][4];
@@ -480,8 +496,10 @@ public:
       n.forces.push_back(f); // normal force
 
       // adjoint static friction, pointing drillpoint
-      f[0] = cos(n.theta - (cos(n.theta) * cos(drillLink.theta) + sin(n.theta) * sin(drillLink.theta) < 0 ? PI : 0.0)); // change the direction for friction
-      f[1] = sin(n.theta - (cos(n.theta) * cos(drillLink.theta) + sin(n.theta) * sin(drillLink.theta) < 0 ? PI : 0.0)); // change the direction for friction
+      // change the direction for friction
+      f[0] = cos(n.theta - (cos(n.theta) * cos(drillLink.theta) + sin(n.theta) * sin(drillLink.theta) < 0 ? PI : 0.0));
+      // change the direction for friction
+      f[1] = sin(n.theta - (cos(n.theta) * cos(drillLink.theta) + sin(n.theta) * sin(drillLink.theta) < 0 ? PI : 0.0));
       f[4] = 1.0 * last_s_f;
       n.forces.push_back(f);
 
@@ -495,8 +513,10 @@ public:
       double new_x = n.x + (first_right + last_right) / 2 * cos(n.theta) + range * cos(n.theta + 0.5 * PI);
       double new_y = n.y + (first_right + last_right) / 2 * sin(n.theta) + range * sin(n.theta + 0.5 * PI);
       if (!n.forces.empty()){
-        if (fabs(n.forces.rbegin()[1][0] - cos(n.theta - 0.5 * PI)) < INFINITESIMAL_DOUBLE && fabs(n.forces.rbegin()[1][1] - sin(n.theta - 0.5 * PI)) < INFINITESIMAL_DOUBLE
-          && fabs((new_x - n.forces.rbegin()[1][2]) * sin(n.theta) - (new_y - n.forces.rbegin()[1][3]) * cos(n.theta)) < INFINITESIMAL_DOUBLE){
+        if (fabs(n.forces.rbegin()[1][0] - cos(n.theta - 0.5 * PI)) < INFINITESIMAL_DOUBLE
+          && fabs(n.forces.rbegin()[1][1] - sin(n.theta - 0.5 * PI)) < INFINITESIMAL_DOUBLE
+          && fabs((new_x - n.forces.rbegin()[1][2]) * sin(n.theta)
+                - (new_y - n.forces.rbegin()[1][3]) * cos(n.theta)) < INFINITESIMAL_DOUBLE){
           last_x = n.forces.back()[2];
           last_y = n.forces.back()[3];
           last_s_n = n.forces.rbegin()[1][4];
@@ -542,14 +562,16 @@ public:
 
       int nV = n.forces.size(), nC = n.forces.size() + 3;
       // nV = number of variables, nC = number of constraints
+      // nV[0 ~ n.forces.size() -1]: forces, nV[n.forces.size()]: T at the end of bracing config
 
-      real_t HM[nV * nV];
-      real_t GM[nV];
-      real_t AM[nC * nV];
-      real_t lb[nV];
-      real_t ub[nV];
-      real_t lbA[nC];
-      real_t ubA[nC];
+      // objective: sum of torques at all segments
+      real_t HM[nV * nV]; // quadratic terms in objective
+      real_t GM[nV]; // linear terms in objective
+      real_t AM[nC * nV]; // constraints
+      real_t lb[nV]; // lower bounds of variables
+      real_t ub[nV]; // upper bounds of variables
+      real_t lbA[nC]; // lower bounds of constraints
+      real_t ubA[nC]; // upper bounds of constraints
 
       // initialize HM and GM
       for(int_t i = 0; i < nV; i++ ){
@@ -559,15 +581,17 @@ public:
         GM[i] = 0.0;
       }
 
-
       if (!n.forces.empty()){
-        double constTerm = n.gAccT + ((drillLink.x - n.getHeadX()) * sin(drillLink.theta + PI) - (drillLink.y - n.getHeadY()) * cos(drillLink.theta + PI)) * DRILLFORCE * P2M_SCALE;
+        double linearTerm = n.gAccT + ((drillLink.x - n.getHeadX()) * sin(drillLink.theta + PI)
+                                    - (drillLink.y - n.getHeadY()) * cos(drillLink.theta + PI))
+                                    * DRILLFORCE * P2M_SCALE;
         vector<double> coeF;
         for(int i = 0; i < n.forces.size(); i++){ // calculate the coefficients of forces
-          coeF.push_back(((n.forces[i][2] - n.getHeadX()) * n.forces[i][1] - (n.forces[i][3] - n.getHeadY()) * n.forces[i][0]) * P2M_SCALE);
+          coeF.push_back(((n.forces[i][2] - n.getHeadX()) * n.forces[i][1]
+                        - (n.forces[i][3] - n.getHeadY()) * n.forces[i][0]) * P2M_SCALE);
         }
         for(int i = 0; i < n.forces.size(); i++){
-          GM[i] += 2 * constTerm * coeF[i];
+          GM[i] += 2 * linearTerm * coeF[i];
           for(int j = 0; j < n.forces.size(); j++){
             HM[i * nV + j] += 2 * coeF[i] * coeF[j];
           }
@@ -576,14 +600,15 @@ public:
 
       for(int_t j = 0; j < nV; j++){
         for(int_t i = 0; i < nC; i++){
-          if (i < 2){
+          if (i < 2){ // force equilibrium, in two directions
             AM[i * nV + j] = fabs(n.forces[(int)j][(int)i]) < INFINITESIMAL_DOUBLE? 0.0 : n.forces[(int)j][(int)i];
-          }else if (i == 2){
-            AM[i * nV + j] = ((n.forces[(int)j][2] - n.getHeadX()) * n.forces[(int)j][1] - (n.forces[(int)j][3] - n.getHeadY()) * n.forces[(int)j][0]) * P2M_SCALE;
+          }else if (i == 2){ // moment equilibrium, in two directions
+            AM[i * nV + j] = ((n.forces[(int)j][2] - n.getHeadX()) * n.forces[(int)j][1]
+                              - (n.forces[(int)j][3] - n.getHeadY()) * n.forces[(int)j][0]) * P2M_SCALE;
           }else if (i == ((int_t)(j / 2) + 3)){
-            AM[i * nV + j] = ((int)j % 2 == 0)? -MU : 1.0;
+            AM[i * nV + j] = ((int)j % 2 == 0)? -MU : 1.0; // 0 <= f_i - /mu * N_i
           }else if (i == ((int)(j / 2) + 3 + (int)(n.forces.size() / 2))){
-            AM[i * nV + j] = ((int)j % 2 == 0)? MU : 1.0;
+            AM[i * nV + j] = ((int)j % 2 == 0)? MU : 1.0; // f_i + /mu * N_i <= 0
           }else{
             AM[i * nV + j] = 0.0;
           }
@@ -603,8 +628,12 @@ public:
           lbA[i] = -n.gAccY - sin(drillLink.theta + PI) * DRILLFORCE;
           ubA[i] = -n.gAccY - sin(drillLink.theta + PI) * DRILLFORCE;
         }else if (i == 2){
-          lbA[i] = -n.gAccT - ((drillLink.x - n.getHeadX()) * sin(drillLink.theta + PI) - (drillLink.y - n.getHeadY()) * cos(drillLink.theta + PI)) * DRILLFORCE * P2M_SCALE;
-          ubA[i] = -n.gAccT - ((drillLink.x - n.getHeadX()) * sin(drillLink.theta + PI) - (drillLink.y - n.getHeadY()) * cos(drillLink.theta + PI)) * DRILLFORCE * P2M_SCALE;
+          lbA[i] = -n.gAccT - ((drillLink.x - n.getHeadX()) * sin(drillLink.theta + PI)
+                              - (drillLink.y - n.getHeadY()) * cos(drillLink.theta + PI))
+                              * DRILLFORCE * P2M_SCALE;
+          ubA[i] = -n.gAccT - ((drillLink.x - n.getHeadX()) * sin(drillLink.theta + PI)
+                              - (drillLink.y - n.getHeadY()) * cos(drillLink.theta + PI))
+                              * DRILLFORCE * P2M_SCALE;
         }else if (i < (n.forces.size() / 2 + 3)){
           lbA[i] = - 2 * MU * MAXFORCE;
           ubA[i] = 0.0;
@@ -620,7 +649,10 @@ public:
       int_t nWSR = 100;
 
       if (SUCCESSFUL_RETURN == exampleCP.init(HM, GM, AM, lb, ub, lbA, ubA, nWSR)){
-        printf("Able to balance drill force: (%g, %g), gravity: (%g, %g) and moment of gravity: %g\n", DRILLFORCE * cos(drillLink.theta + PI), DRILLFORCE * sin(drillLink.theta + PI), n.gAccX, n.gAccY, n.gAccT);
+        printf("Able to balance drill force: (%g, %g), gravity: (%g, %g) and moment of gravity: %g\n",
+                DRILLFORCE * cos(drillLink.theta + PI),
+                DRILLFORCE * sin(drillLink.theta + PI),
+                n.gAccX, n.gAccY, n.gAccT);
         real_t xOpt[nV];
         exampleCP.getPrimalSolution(xOpt);
         for(int i = 0; i < nV; i++){
@@ -635,14 +667,16 @@ public:
     }else{// tapping
       int nV = n.forces.size() + 1, nC = n.forces.size() + 3;
       // nV = number of variables, nC = number of constraints
+      // nV[0 ~ n.forces.size() -1]: forces, nV[n.forces.size()]: T at the end of bracing config
 
-      real_t HM[nV * nV];
-      real_t AM[nC * nV];
-      real_t GM[nV];
-      real_t lb[nV];
-      real_t ub[nV];
-      real_t lbA[nC];
-      real_t ubA[nC];
+      // objective: the torques acting at the end of the link
+      real_t HM[nV * nV]; // quadratic terms in objective
+      real_t GM[nV]; // linear terms in objective
+      real_t AM[nC * nV]; // constraints
+      real_t lb[nV]; // lower bounds of variables
+      real_t ub[nV]; // upper bounds of variables
+      real_t lbA[nC]; // lower bounds of constraints
+      real_t ubA[nC]; // upper bounds of constraints
 
       for(int_t i = 0; i < nV; i++ ){
         for(int_t j = 0; j < nV; j++ ){
@@ -664,7 +698,8 @@ public:
             if (i < 2){
               AM[i * nV + j] = fabs(n.forces[(int)j][(int)i]) < INFINITESIMAL_DOUBLE? 0.0 : n.forces[(int)j][(int)i];
             }else if (i == 2){
-              AM[i * nV + j] = ((n.forces[(int)j][2] - n.getHeadX()) * n.forces[(int)j][1] - (n.forces[(int)j][3] - n.getHeadY()) * n.forces[(int)j][0]) * P2M_SCALE;
+              AM[i * nV + j] = ((n.forces[(int)j][2] - n.getHeadX()) * n.forces[(int)j][1]
+                              - (n.forces[(int)j][3] - n.getHeadY()) * n.forces[(int)j][0]) * P2M_SCALE;
             }else if (i == ((int_t)(j / 2) + 3)){
               AM[i * nV + j] = ((int)j % 2 == 0)? -MU : 1.0;
             }else if (i == ((int)(j / 2) + 3 + (int)(n.forces.size() / 2))){
@@ -716,12 +751,13 @@ public:
       exampleCP.setPrintLevel(PL_NONE);
       int_t nWSR = 100;
 
-      if (SUCCESSFUL_RETURN == exampleCP.init(HM, GM, AM, lb, ub, lbA, ubA, nWSR)){
+      if (SUCCESSFUL_RETURN == exampleCP.init(HM, GM, AM, lb, ub, lbA, ubA, nWSR)
+          && (sqrt(fabs(exampleCP.getObjVal()) * 2) < MAXTORQUE)){
         // if feasible
         return true;
-      }else{
-        return false;
       }
+
+      return false;
     }
   }
 
@@ -759,7 +795,8 @@ public:
           if (i < 2){
             AM[i * nV + j] = fabs(n.forces[(int)j][(int)i]) < INFINITESIMAL_DOUBLE? 0.0 : n.forces[(int)j][(int)i];
           }else if (i == 2){
-            AM[i * nV + j] = ((n.forces[(int)j][2] - n.getHeadX()) * n.forces[(int)j][1] - (n.forces[(int)j][3] - n.getHeadY()) * n.forces[(int)j][0]) * P2M_SCALE;
+            AM[i * nV + j] = ((n.forces[(int)j][2] - n.getHeadX()) * n.forces[(int)j][1]
+                            - (n.forces[(int)j][3] - n.getHeadY()) * n.forces[(int)j][0]) * P2M_SCALE;
           }else if (i == ((int_t)(j / 2) + 3)){
             AM[i * nV + j] = ((int)j % 2 == 0)? -MU : 1.0;
           }else if (i == ((int)(j / 2) + 3 + (int)(n.forces.size() / 2))){
@@ -814,8 +851,10 @@ public:
         lbA[i] = -n.gAccY - sin(drillLink.theta + PI) * DRILLFORCE;
         ubA[i] = -n.gAccY - sin(drillLink.theta + PI) * DRILLFORCE;
       }else if (i == 2){
-        lbA[i] = -n.gAccT - ((drillLink.x - n.getHeadX()) * sin(drillLink.theta + PI) - (drillLink.y - n.getHeadY()) * cos(drillLink.theta + PI)) * DRILLFORCE * P2M_SCALE;
-        ubA[i] = -n.gAccT - ((drillLink.x - n.getHeadX()) * sin(drillLink.theta + PI) - (drillLink.y - n.getHeadY()) * cos(drillLink.theta + PI)) * DRILLFORCE * P2M_SCALE;
+        lbA[i] = -n.gAccT - ((drillLink.x - n.getHeadX()) * sin(drillLink.theta + PI)
+                            - (drillLink.y - n.getHeadY()) * cos(drillLink.theta + PI)) * DRILLFORCE * P2M_SCALE;
+        ubA[i] = -n.gAccT - ((drillLink.x - n.getHeadX()) * sin(drillLink.theta + PI)
+                            - (drillLink.y - n.getHeadY()) * cos(drillLink.theta + PI)) * DRILLFORCE * P2M_SCALE;
       }else if (i < (n.forces.size() / 2 + 3)){
         lbA[i] = - 2 * MU * MAXFORCE;
         ubA[i] = 0.0;
@@ -831,37 +870,37 @@ public:
     int_t nWSR = 100;
 
     if (SUCCESSFUL_RETURN == exampleCP.init(HM, GM, AM, lb, ub, lbA, ubA, nWSR)){
-      double maxtor = sqrt(fabs(exampleCP.getObjVal()) * 2);
-      if(maxtor > MAXTORQUE){
-        //cout << "Exceeded joint torque limit: " << maxtor << endl;
-        return -1.0;
-      }else{
-        // cout << "Joint torque within limit: " << (maxtor < INFINITESIMAL_DOUBLE? 0 : maxtor) << endl;
-        return maxtor;
+      double min_feasible_torque = sqrt(fabs(exampleCP.getObjVal()) * 2);
+      if(min_feasible_torque <= MAXTORQUE){
+        return min_feasible_torque;
       }
-    }else{
-      //cout << "Torque checking: cannot balance!" << endl;
-      return -1.0;
     }
+
+    return -1.0;
   }
 
 	bool isLinkAccessible (const LINK & tn, LINK & ol) {//ol = original LINK
-    if (grey_map.at<uchar>((int)round(tn.getHeadY()), (int)round(tn.getHeadX())) <= OBSTHRESHOLD) return false;
+    if (grey_map.at<uchar>((int)round(tn.getHeadY()),
+                           (int)round(tn.getHeadX())) <= OBSTHRESHOLD) return false;
     // is the link in workspace
-    if (tn.getHeadX() < MIN_X || tn.getHeadX() > MAX_X || tn.getHeadY() < MIN_Y || tn.getHeadY() > MAX_Y)
+    if (tn.getHeadX() < MIN_X || tn.getHeadX() > MAX_X
+      || tn.getHeadY() < MIN_Y || tn.getHeadY() > MAX_Y)
       return false;
 		//check each point on the link, interval = 1, and the end as well
     for(double i = tn.getLength(); i > 0.0; ){
-			if (grey_map.at<uchar>((int)round(tn.y + i * sin(tn.theta)), (int)round(tn.x + i * cos(tn.theta))) <= OBSTHRESHOLD) return false;
+			if (grey_map.at<uchar>((int)round(tn.y + i * sin(tn.theta)),
+                             (int)round(tn.x + i * cos(tn.theta))) <= OBSTHRESHOLD) return false;
       i -= 0.5;
 		}
 
     if (ol != startLink){
   		//check if the passage(shortcut) is accessible
-  		double y_d = tn.y + (tn.expansion * L + AA * 2) * sin(tn.theta) - ol.y, x_d = tn.x + (tn.expansion * L + AA * 2) * cos(tn.theta) - ol.x;
+  		double y_d = tn.y + (tn.expansion * L + AA * 2) * sin(tn.theta) - ol.y,
+            x_d = tn.x + (tn.expansion * L + AA * 2) * cos(tn.theta) - ol.x;
   		double new_theta = atan2(y_d, x_d);
   		for(double i = 1; i <= sqrt(pow(y_d, 2) + pow(x_d, 2)); i+=1){
-  			if (grey_map.at<uchar>((int)round(ol.y + i * sin(new_theta)), (int)round(ol.x + i * cos(new_theta))) <= OBSTHRESHOLD) return false;
+  			if (grey_map.at<uchar>((int)round(ol.y + i * sin(new_theta)),
+                               (int)round(ol.x + i * cos(new_theta))) <= OBSTHRESHOLD) return false;
   		}
     }
 
@@ -870,8 +909,6 @@ public:
 
 	void getSuccessors(LINK & n, vector<LINK> * s, vector<double>* c) // *** This must be defined
 	{
-    // cout << "curent g value: " << n.G << endl;
-    if (n.G > 16.0) return;
     GRAVITYDIR;
     // if this is a dead end
     if (!n.continue_expansion){
@@ -882,9 +919,8 @@ public:
     bool display;
     if (searchMode == 0){
       // force balance mode
-      //cout <<"Closest point of n: " << n.iClosestP_cost << endl;
 
-      //A-star
+      // successors
       for(double i = 0.0; i <= 1; i+=EL){//expanding length: 0, 0.5, 1.0
         for (int j = -2; j <= 2; j++){
           display = false;
@@ -906,18 +942,19 @@ public:
           }
 
           getClosestPt(tn);
-          //if (tn.y > 155.0 || tn.x > 130.0) continue;
 
           // get the closest point to the new link
 
           tn.getGraAcc(LINKMASS, n.gAccX, n.gAccY, n.gAccT);
           double torq = torqueCheck(tn);
 
-          if (torq < 0.0) {
+          if (torq < 0.0){
             //if (tn.theta > PI) printf("An upwards segment neglected due to torque, theta = %g\n", tn.theta);
             over_torque_links.push_back(tn);
-            line(realtime_display, cv_plot_coord(tn.x, tn.y),
-              cv_plot_coord(tn.getHeadX(), tn.getHeadY()), CV_RGB(255, 0, 255), LINE_THICKNESS);
+            line(realtime_display,
+                  cv_plot_coord(tn),
+                  cv_plot_coord(tn.getHead()),
+                  CV_RGB(255, 0, 255), LINE_THICKNESS);
             continue;
           }
 
@@ -970,8 +1007,10 @@ public:
 
           tn.getGraAcc(LINKMASS, n.gAccX, n.gAccY, n.gAccT);
           //draw the new successor in grey
-          line(realtime_display, cv_plot_coord(tn.x, tn.y),
-            cv_plot_coord((tn.x + (tn.expansion * L + AA * 2) * cos(tn.theta)), (tn.y + (tn.expansion * L + AA * 2) * sin(tn.theta))), CV_RGB(200, 200, 200), LINE_THICKNESS);
+          line(realtime_display,
+              cv_plot_coord(tn),
+              cv_plot_coord(tn.getHead()),
+              CV_RGB(200, 200, 200), LINE_THICKNESS);
 
           s->push_back(tn);
           c->push_back((AA * 2 + L * tn.expansion) / (AA * 2 + L)); // projection on the sk_cost
@@ -1083,7 +1122,9 @@ public:
         d_startLink.getGraAcc(HEADMASS, 0, 0, 0);
         // cout <<"Closest point of d_startLink: " << d_startLink.iClosestP_cost << endl;
         line(realtime_display, cv_plot_coord(d_startLink.x, d_startLink.y),
-          cv_plot_coord((d_startLink.x + (d_startLink.expansion * L + AA * 2) * cos(d_startLink.theta)), (d_startLink.y + (d_startLink.expansion * L + AA * 2) * sin(d_startLink.theta))), CV_RGB(200, 200, 200), LINE_THICKNESS);
+          cv_plot_coord((d_startLink.x + (d_startLink.expansion * L + AA * 2) * cos(d_startLink.theta)),
+                        (d_startLink.y + (d_startLink.expansion * L + AA * 2) * sin(d_startLink.theta))),
+                        CV_RGB(200, 200, 200), LINE_THICKNESS);
         theStartLinks.push_back(d_startLink);
       }
 
@@ -1110,8 +1151,10 @@ public:
             continue;
           }
           //draw the new successor in red
-          line(realtime_display, cv_plot_coord(tn.x, tn.y),
-            cv_plot_coord((tn.x + (tn.expansion * L + AA * 2) * cos(tn.theta)), (tn.y + (tn.expansion * L + AA * 2) * sin(tn.theta))), CV_RGB(255, 0, 0), LINE_THICKNESS);
+          line(realtime_display,
+              cv_plot_coord(tn),
+              cv_plot_coord(tn.getHead()),
+              CV_RGB(255, 0, 0), LINE_THICKNESS);
           theStartLinks.push_back(tn);
         }
       }
@@ -1193,7 +1236,8 @@ public:
             paths.push_back(n);
             imshow("Display window", decision_display);
             // imwrite("outfiles/decision.png", decision_display);
-            printf("Got a valid path. n.theta = %g PI, sin(n.theta) = %g. Press any key to continue\n", n.theta / PI, sin(n.theta));
+            printf("Got a valid path. n.theta = %g PI, sin(n.theta) = %g. Press any key to continue\n",
+                  n.theta / PI, sin(n.theta));
             cvWaitKey();
 
             return true;
