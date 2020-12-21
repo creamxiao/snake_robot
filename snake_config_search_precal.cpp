@@ -701,7 +701,7 @@ int main(int argc, char *argv[])
     forceModule = sqrt(pow(Fx_end, 2) + pow(Fy_end, 2));
     greatestForce = max(greatestForce, fabs(forceModule));
     greatestTorque = max(greatestTorque, fabs(T_end));
-    forceFile << "\t\tback(" << Fx_end * cos(allLks[b].theta) + Fy_end * sin(allLks[b].theta) << ", "
+    forceFile << "\t\tProximal end(" << Fx_end * cos(allLks[b].theta) + Fy_end * sin(allLks[b].theta) << ", "
                              << Fx_end * sin(allLks[b].theta) - Fy_end * cos(allLks[b].theta)  << ", "
                              << -T_end << ") ("<< -Fy_end << ", " << -Fy_end << ", " << -T_end << ")";
     forceFile << " module(" << forceModule << ", " << fabs(T_end) << ")" << endl;
