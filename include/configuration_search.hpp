@@ -60,7 +60,7 @@ public:
 
 	// variables decsribing problem
 	int MAX_X, MIN_X, MAX_Y, MIN_Y;
-  LINK startLink, goalLink, drillLink;
+  LINK startLink, goalLink, drillLink; // drill link pointing at the drill point, opposite from the start link
   int searchMode; // 0 = first search, 1 = 2nd search, 2 = 1st transitional search
 
 	// solution classes
@@ -562,9 +562,11 @@ public:
 
       int nV = n.forces.size(), nC = n.forces.size() + 3;
       // nV = number of variables, nC = number of constraints
-      // nV[0 ~ n.forces.size() -1]: forces, nV[n.forces.size()]: T at the end of bracing config
+      // nV[0 ~ n.forces.size() -1]: forces
+      // nC[0 ~ n.forces.size() -1]: friction constraints,
+      // nC[n.forces.size() / n.forces.size() + 1]: friction constraints
 
-      // objective: sum of torques at all segments
+
       real_t HM[nV * nV]; // quadratic terms in objective
       real_t GM[nV]; // linear terms in objective
       real_t AM[nC * nV]; // constraints
@@ -581,20 +583,36 @@ public:
         GM[i] = 0.0;
       }
 
+      // torque acting on one end of a segment, T_end
+      // = sigma (external force(F) * its moment arm)
+      //  + torque of gravity + torque of drill force
+
+      // objective: sum of torques at all segments
+      // if (!n.forces.empty()){
+      //   // torques from gravity and drill force
+      //   double linearTerm = n.gAccT
+      //                      + ((drillLink.x - n.getHeadX()) * sin(drillLink.theta + PI)
+      //                       - (drillLink.y - n.getHeadY()) * cos(drillLink.theta + PI))
+      //                       * DRILLFORCE * P2M_SCALE;
+      //   vector<double> coeF;
+      //   for(int i = 0; i < n.forces.size(); i++){ // calculate the coefficients of forces
+      //     // moment arm of normal forces and frictions
+      //     coeF.push_back(((n.forces[i][2] - n.getHeadX()) * n.forces[i][1]
+      //                   - (n.forces[i][3] - n.getHeadY()) * n.forces[i][0]) * P2M_SCALE);
+      //   }
+      //   for(int i = 0; i < n.forces.size(); i++){
+      //     GM[i] += 2 * linearTerm * coeF[i];
+      //     for(int j = 0; j < n.forces.size(); j++){
+      //       HM[i * nV + j] += 2 * coeF[i] * coeF[j];
+      //     }
+      //   }
+      // }
+
+      // objective: sum of square of normal forces
       if (!n.forces.empty()){
-        double linearTerm = n.gAccT + ((drillLink.x - n.getHeadX()) * sin(drillLink.theta + PI)
-                                    - (drillLink.y - n.getHeadY()) * cos(drillLink.theta + PI))
-                                    * DRILLFORCE * P2M_SCALE;
-        vector<double> coeF;
-        for(int i = 0; i < n.forces.size(); i++){ // calculate the coefficients of forces
-          coeF.push_back(((n.forces[i][2] - n.getHeadX()) * n.forces[i][1]
-                        - (n.forces[i][3] - n.getHeadY()) * n.forces[i][0]) * P2M_SCALE);
-        }
         for(int i = 0; i < n.forces.size(); i++){
-          GM[i] += 2 * linearTerm * coeF[i];
-          for(int j = 0; j < n.forces.size(); j++){
-            HM[i * nV + j] += 2 * coeF[i] * coeF[j];
-          }
+          if (i % 2 != 0) continue;
+          HM[i * nV + i] += 2.0;
         }
       }
 
@@ -615,19 +633,17 @@ public:
         }
       }
 
-      for(int_t i = 0; i < nV; i++ ){
-        lb[i] = (i % 2 == 0)? 0.0 : -MU * MAXFORCE;
-        ub[i] = ((i % 2 == 0)? 1.0 : MU) * MAXFORCE;
-      }
-
       for(int_t i = 0; i < nC; i++){
         if (i == 0){
-          lbA[i] = -n.gAccX - cos(drillLink.theta + PI) * DRILLFORCE;
-          ubA[i] = -n.gAccX - cos(drillLink.theta + PI) * DRILLFORCE;
+          // force equilibrium, X direction
+          lbA[i] = -(n.gAccX + cos(drillLink.theta + PI) * DRILLFORCE);
+          ubA[i] = -(n.gAccX + cos(drillLink.theta + PI) * DRILLFORCE);
         }else if (i == 1){
-          lbA[i] = -n.gAccY - sin(drillLink.theta + PI) * DRILLFORCE;
-          ubA[i] = -n.gAccY - sin(drillLink.theta + PI) * DRILLFORCE;
+          // force equilibrium, Y direction
+          lbA[i] = -(n.gAccY + sin(drillLink.theta + PI) * DRILLFORCE);
+          ubA[i] = -(n.gAccY + sin(drillLink.theta + PI) * DRILLFORCE);
         }else if (i == 2){
+          // moment equilibrium
           lbA[i] = -n.gAccT - ((drillLink.x - n.getHeadX()) * sin(drillLink.theta + PI)
                               - (drillLink.y - n.getHeadY()) * cos(drillLink.theta + PI))
                               * DRILLFORCE * P2M_SCALE;
@@ -641,6 +657,11 @@ public:
           lbA[i] = 0.0;
           ubA[i] = 2 * MU * MAXFORCE;
         }
+      }
+
+      for(int_t i = 0; i < nV; i++ ){
+        lb[i] = (i % 2 == 0)? 0.0 : -MU * MAXFORCE;
+        ub[i] = ((i % 2 == 0)? 1.0 : MU) * MAXFORCE;
       }
 
       QProblem exampleCP(nV, nC);
@@ -667,7 +688,7 @@ public:
     }else{// tapping
       int nV = n.forces.size() + 1, nC = n.forces.size() + 3;
       // nV = number of variables, nC = number of constraints
-      // nV[0 ~ n.forces.size() -1]: forces, nV[n.forces.size()]: T at the end of bracing config
+      // nV[0 ~ n.forces.size() -1]: forces, nV[n.forces.size()]: Torque at the end of bracing config
 
       // objective: the torques acting at the end of the link
       real_t HM[nV * nV]; // quadratic terms in objective
