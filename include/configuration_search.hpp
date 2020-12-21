@@ -583,31 +583,6 @@ public:
         GM[i] = 0.0;
       }
 
-      // torque acting on one end of a segment, T_end
-      // = sigma (external force(F) * its moment arm)
-      //  + torque of gravity + torque of drill force
-
-      // objective: sum of torques at all segments
-      // if (!n.forces.empty()){
-      //   // torques from gravity and drill force
-      //   double linearTerm = n.gAccT
-      //                      + ((drillLink.x - n.getHeadX()) * sin(drillLink.theta + PI)
-      //                       - (drillLink.y - n.getHeadY()) * cos(drillLink.theta + PI))
-      //                       * DRILLFORCE * P2M_SCALE;
-      //   vector<double> coeF;
-      //   for(int i = 0; i < n.forces.size(); i++){ // calculate the coefficients of forces
-      //     // moment arm of normal forces and frictions
-      //     coeF.push_back(((n.forces[i][2] - n.getHeadX()) * n.forces[i][1]
-      //                   - (n.forces[i][3] - n.getHeadY()) * n.forces[i][0]) * P2M_SCALE);
-      //   }
-      //   for(int i = 0; i < n.forces.size(); i++){
-      //     GM[i] += 2 * linearTerm * coeF[i];
-      //     for(int j = 0; j < n.forces.size(); j++){
-      //       HM[i * nV + j] += 2 * coeF[i] * coeF[j];
-      //     }
-      //   }
-      // }
-
       // objective: sum of square of normal forces
       if (!n.forces.empty()){
         for(int i = 0; i < n.forces.size(); i++){
@@ -690,7 +665,6 @@ public:
       // nV = number of variables, nC = number of constraints
       // nV[0 ~ n.forces.size() -1]: forces, nV[n.forces.size()]: Torque at the end of bracing config
 
-      // objective: the torques acting at the end of the link
       real_t HM[nV * nV]; // quadratic terms in objective
       real_t GM[nV]; // linear terms in objective
       real_t AM[nC * nV]; // constraints
@@ -699,6 +673,7 @@ public:
       real_t lbA[nC]; // lower bounds of constraints
       real_t ubA[nC]; // upper bounds of constraints
 
+      // objective: the torque acting at the end of the link
       for(int_t i = 0; i < nV; i++ ){
         for(int_t j = 0; j < nV; j++ ){
           if (i == (nV - 1) && j == (nV - 1)){
