@@ -546,7 +546,7 @@ public:
     }
   }
 
-  bool forceSpanningCheck(LINK & n, bool D_F){ // D_F == true, DRILLFORCE switch on
+  bool forceSpanningCheck(LINK & n, bool D_F, const vector<LINK> * pathptr = NULL){ // D_F == true, DRILLFORCE switch on
     // there must exists even number of forces
     if (n.forces.empty() || n.forces.size() % 2 != 0) return false;
 
@@ -560,12 +560,10 @@ public:
       for (int i = p.size() - 1; i >= 0; i--)
         pathLks.push_back(* p[i]);
 
-      int nV = n.forces.size(), nC = n.forces.size() + 3;
+      int nV = n.forces.size(), nC = n.forces.size() + 3 + (*pathptr).size();
       // nV = number of variables, nC = number of constraints
-      // nV[0 ~ n.forces.size() -1]: forces
-      // nC[0 ~ n.forces.size() -1]: friction constraints,
-      // nC[n.forces.size() / n.forces.size() + 1]: friction constraints
-
+      // nV: forces
+      // nC: friction constraints + 3 equilibirm constraints
 
       real_t HM[nV * nV]; // quadratic terms in objective
       real_t GM[nV]; // linear terms in objective
@@ -602,6 +600,14 @@ public:
             AM[i * nV + j] = ((int)j % 2 == 0)? -MU : 1.0; // 0 <= f_i - /mu * N_i
           }else if (i == ((int)(j / 2) + 3 + (int)(n.forces.size() / 2))){
             AM[i * nV + j] = ((int)j % 2 == 0)? MU : 1.0; // f_i + /mu * N_i <= 0
+          }else if (i >= (n.forces.size() + 3)
+            && (*pathptr)[i - n.forces.size() - 3].forces.size() > j){
+            // moment on each segment
+            // moment arm of normal forces and frictions
+            AM[i * nV + j] = ((n.forces[j][2] - (*pathptr)[i - n.forces.size() - 3].getHeadX())
+                             * n.forces[j][1]
+                            - (n.forces[j][3] - (*pathptr)[i - n.forces.size() - 3].getHeadY())
+                             * n.forces[j][0]) * P2M_SCALE;
           }else{
             AM[i * nV + j] = 0.0;
           }
@@ -611,26 +617,36 @@ public:
       for(int_t i = 0; i < nC; i++){
         if (i == 0){
           // force equilibrium, X direction
-          lbA[i] = -(n.gAccX + cos(drillLink.theta + PI) * DRILLFORCE);
-          ubA[i] = -(n.gAccX + cos(drillLink.theta + PI) * DRILLFORCE);
+          lbA[i] = ubA[i] = -(n.gAccX + cos(drillLink.theta + PI) * DRILLFORCE);
         }else if (i == 1){
           // force equilibrium, Y direction
-          lbA[i] = -(n.gAccY + sin(drillLink.theta + PI) * DRILLFORCE);
-          ubA[i] = -(n.gAccY + sin(drillLink.theta + PI) * DRILLFORCE);
+          lbA[i] = ubA[i] = -(n.gAccY + sin(drillLink.theta + PI) * DRILLFORCE);
         }else if (i == 2){
           // moment equilibrium
-          lbA[i] = -n.gAccT - ((drillLink.x - n.getHeadX()) * sin(drillLink.theta + PI)
-                              - (drillLink.y - n.getHeadY()) * cos(drillLink.theta + PI))
-                              * DRILLFORCE * P2M_SCALE;
-          ubA[i] = -n.gAccT - ((drillLink.x - n.getHeadX()) * sin(drillLink.theta + PI)
+          lbA[i] = ubA[i] = -n.gAccT - ((drillLink.x - n.getHeadX()) * sin(drillLink.theta + PI)
                               - (drillLink.y - n.getHeadY()) * cos(drillLink.theta + PI))
                               * DRILLFORCE * P2M_SCALE;
         }else if (i < (n.forces.size() / 2 + 3)){
+          // friction limit
           lbA[i] = - 2 * MU * MAXFORCE;
           ubA[i] = 0.0;
-        }else{
+        }else if (i < (n.forces.size() + 3)){
+          // friction limit
           lbA[i] = 0.0;
           ubA[i] = 2 * MU * MAXFORCE;
+        }else{
+          const LINK & chosenLink = (*pathptr)[i - n.forces.size() - 3];
+          // moment on each segment
+          lbA[i] = -chosenLink.gAccT
+                    - ((drillLink.x - chosenLink.getHeadX()) * sin(drillLink.theta + PI)
+                     - (drillLink.y - chosenLink.getHeadY()) * cos(drillLink.theta + PI))
+                      * DRILLFORCE * P2M_SCALE
+                    - MAXTORQUE;
+          ubA[i] = -chosenLink.gAccT
+                    - ((drillLink.x - chosenLink.getHeadX()) * sin(drillLink.theta + PI)
+                     - (drillLink.y - chosenLink.getHeadY()) * cos(drillLink.theta + PI))
+                      * DRILLFORCE * P2M_SCALE
+                    + MAXTORQUE;
         }
       }
 
@@ -665,6 +681,7 @@ public:
       // nV = number of variables, nC = number of constraints
       // nV[0 ~ n.forces.size() -1]: forces, nV[n.forces.size()]: Torque at the end of bracing config
 
+      // objective: the torques acting at the end of the link
       real_t HM[nV * nV]; // quadratic terms in objective
       real_t GM[nV]; // linear terms in objective
       real_t AM[nC * nV]; // constraints
@@ -673,7 +690,6 @@ public:
       real_t lbA[nC]; // lower bounds of constraints
       real_t ubA[nC]; // upper bounds of constraints
 
-      // objective: the torque acting at the end of the link
       for(int_t i = 0; i < nV; i++ ){
         for(int_t j = 0; j < nV; j++ ){
           if (i == (nV - 1) && j == (nV - 1)){
@@ -1203,16 +1219,15 @@ public:
         if (!haveFeasibleSuc) return false;
 
         if (forceSpanningCheck(n, false)){
-          if(forceSpanningCheck(n, true)) {
-            // Reconstruct the path with the previous link
-            vector<LINK*> p = reconstructPointerPath(n);
-            vector<LINK> pathLks;
-            for (int i = p.size() - 1; i >= 0; i--)
-              pathLks.push_back(* p[i]);
+          // Reconstruct the path with the previous link
+          vector<LINK*> p = reconstructPointerPath(n);
+          vector<LINK> pathLks;
+          for (int i = p.size() - 1; i >= 0; i--)
+            pathLks.push_back(* p[i]);
 
-            if (IsPathSelfTangled(pathLks)) return false;
+          if (IsPathSelfTangled(pathLks)) return false;
 
-
+          if(forceSpanningCheck(n, true, & pathLks)) {
             clock_gettime(CLOCK_MONOTONIC, &finish_time);
             searchDuration = (finish_time.tv_sec - start_time.tv_sec);
             searchDuration += (finish_time.tv_nsec - start_time.tv_nsec) / 1000000000.0;
