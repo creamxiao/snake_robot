@@ -271,20 +271,6 @@ public:
     return false;
   }
 
-  bool IsPathSelfTangled(const vector<LINK> & inputPath) {
-    //check if it crosses itself
-    for(int a = 0; a < (inputPath.size() - 2); a++){
-      for(int b = a + 2; b < inputPath.size(); b++){
-        if (AreLinksIntersecting(inputPath[a], inputPath[b])
-         && AreLinksIntersecting(inputPath[b], inputPath[a])){
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
   void getClosestPt(LINK & n){ // get the closest point of sk_cost/sk_deu to the end of this link
     int rdY = min(MAX_Y - 1, max(MIN_Y, (int)round(n.getHeadY())));
     int rdX = min(MAX_X - 1, max(MIN_X, (int)round(n.getHeadX())));
