@@ -15,13 +15,6 @@
 #include <ctime>
 #include <cstdlib>
 #include <regex>
-
-// Create a model by column
-// #include "ClpSimplex.hpp"
-// #include "CoinHelperFunctions.hpp"
-// #include "CoinTime.hpp"
-// #include "CoinBuild.hpp"
-// #include "CoinModel.hpp"
 #include <iomanip>
 #include <cassert>
 
@@ -61,6 +54,7 @@ vector<POINT> sk_heu;
 vector<LINK> allLks;
 Point ** SkeletonMat;
 double MU;
+double ext_dist;
 Mat original_map;
 string program_Name;
 
@@ -159,19 +153,25 @@ void skeleton_generator(const Mat & search_map, POINT s, double s_theta, POINT g
   char fileName[1024];
   time_t now = time(0);
 	tm* localtm = localtime(&now);
-  cout << "Program name: " << program_Name << endl;
-  sprintf(fileName, "outfiles/%s_%d_%d_%d_%d_%d_%d_shortest_search.png",
-          program_Name,
-          1900 + localtm->tm_year,
-          1 + localtm->tm_mon,
-          localtm->tm_mday,
-          localtm->tm_hour,
-          localtm->tm_min,
-          localtm->tm_sec);
-
+  // sprintf(fileName, "outfiles/%s_%d_%d_%d_%d_%d_%d_shortest_search.png",
+  //         program_Name,
+  //         1900 + localtm->tm_year,
+  //         1 + localtm->tm_mon,
+  //         localtm->tm_mday,
+  //         localtm->tm_hour,
+  //         localtm->tm_min,
+  //         localtm->tm_sec);
   // imwrite(fileName, shortest_search.realtime_display);
+  putText(shortest_search.realtime_display,
+          "Reference path found.",
+          CvPoint(10, shortest_search.realtime_display.rows - 10 - 15),
+          FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(0, 0, 0), 1, CV_AA, false);
+  putText(shortest_search.realtime_display,
+          "Press any key to continue",
+          CvPoint(10, shortest_search.realtime_display.rows - 10),
+          FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(0, 0, 0), 1, CV_AA, false);
   imshow("Display window", shortest_search.realtime_display);
-  cout << "Reference path is shown. Press any key to continue" << endl;
+  cout << GREEN << "Reference path is shown. Click on 'Display window' then press any key to continue" << RESET << endl;
   cvWaitKey();
 
   // destroyWindow("Reference path");
@@ -191,9 +191,10 @@ void findLowCostZone(const Mat & input_canvas, Mat & output_canvas){
   Point whiteP, blackP;
   for(int i = 1; i < (input_canvas.cols - 1); i++){
     for(int j = 1; j < (input_canvas.rows - 1); j++){
-      // if the pixel is white or red
+      // if the pixel is white or red or cyan
       if (input_canvas.at<Vec3b>(j, i) == Vec3b(255, 255, 255)
-        || input_canvas.at<Vec3b>(j, i) == Vec3b(0, 0, 255)) continue;
+        || input_canvas.at<Vec3b>(j, i) == Vec3b(0, 0, 255)
+        || input_canvas.at<Vec3b>(j, i) == Vec3b(255, 255, 0)) continue;
 
       // reset sum
       whiteP = Point(0, 0);
@@ -202,9 +203,12 @@ void findLowCostZone(const Mat & input_canvas, Mat & output_canvas){
       for(int a = -1; a <= 1; a++){
         for(int b = -1; b <= 1; b++){
           if (abs(a) == abs(b)) continue;
-          if (input_canvas.at<Vec3b>(j + b, i + a) == Vec3b(255, 255, 255)){
+          if (input_canvas.at<Vec3b>(j + b, i + a) == Vec3b(255, 255, 255)
+           || input_canvas.at<Vec3b>(j + b, i + a) == Vec3b(255, 255, 0)){
+            // if white or cyan
             whiteP += Point(a, b);
           }else if (input_canvas.at<Vec3b>(j + b, i + a) == Vec3b(0, 0, 0)){
+            // if black
             blackP += Point(a, b);
           }
         }
@@ -223,7 +227,9 @@ void findLowCostZone(const Mat & input_canvas, Mat & output_canvas){
     for(int a = 0; a <= 2; a++){
       for(int b = 0; b <= 2; b++){
         if (input_canvas.at<Vec3b>(CC_points[i].y - CC_B_dir[i].y * b,
-                                  CC_points[i].x - CC_B_dir[i].x * a) == Vec3b(255, 255, 255))
+                                  CC_points[i].x - CC_B_dir[i].x * a) == Vec3b(255, 255, 255)
+         || input_canvas.at<Vec3b>(CC_points[i].y - CC_B_dir[i].y * b,
+                                  CC_points[i].x - CC_B_dir[i].x * a) == Vec3b(255, 255, 0))
           output_canvas.at<Vec3b>(CC_points[i].y - CC_B_dir[i].y * b,
                                   CC_points[i].x - CC_B_dir[i].x * a) = Vec3b(255, 255, 0);
       }
@@ -234,7 +240,8 @@ void findLowCostZone(const Mat & input_canvas, Mat & output_canvas){
       if (input_canvas.at<Vec3b>(CC_points[i].y, a) == Vec3b(0, 0, 0)){
         int b;
         for(b = 1; b <= 2; b++){
-          if (input_canvas.at<Vec3b>(CC_points[i].y - CC_B_dir[i].y * b, a) == Vec3b(255, 255, 255)){
+          if (input_canvas.at<Vec3b>(CC_points[i].y - CC_B_dir[i].y * b, a) == Vec3b(255, 255, 255)
+           || input_canvas.at<Vec3b>(CC_points[i].y - CC_B_dir[i].y * b, a) == Vec3b(255, 255, 0)){
             output_canvas.at<Vec3b>(CC_points[i].y - CC_B_dir[i].y * b, a) = Vec3b(255, 255, 0);
           }else if (b == 1){
             break;
@@ -252,7 +259,8 @@ void findLowCostZone(const Mat & input_canvas, Mat & output_canvas){
       if (input_canvas.at<Vec3b>(a, CC_points[i].x) == Vec3b(0, 0, 0)){
         int b;
         for(b = 1; b <= 2; b++){
-          if (input_canvas.at<Vec3b>(a, CC_points[i].x - CC_B_dir[i].x * b) == Vec3b(255, 255, 255)){
+          if (input_canvas.at<Vec3b>(a, CC_points[i].x - CC_B_dir[i].x * b) == Vec3b(255, 255, 255)
+           || input_canvas.at<Vec3b>(a, CC_points[i].x - CC_B_dir[i].x * b) == Vec3b(255, 255, 0)){
             output_canvas.at<Vec3b>(a, CC_points[i].x - CC_B_dir[i].x * b) = Vec3b(255, 255, 0);
           }else if (b == 1){
             break;
@@ -272,21 +280,20 @@ int main(int argc, char *argv[])
 	string program_fName(argv[0]);
 	string program_folderName = program_fName.substr(0, program_fName.find_last_of("/\\")+1);
 
-	string expt_f_name = program_folderName + "exptfiles/experiments.json", expt_name = "23a";
+	// string expt_f_name = program_folderName + "exptfiles/experiments.json", expt_name = "23a";
+  string expt_f_name = program_folderName + "exptfiles/experiments.json", expt_name = "21f";
 
 	if (argc > 1) {
 		// expt_f_name = argv[1];
 		expt_name = argv[1];
 	}
 
-  MU = default_MU;
-  if (argc > 2){
-    MU = stod(argv[2]);
-  }
   program_Name = argv[0];
   // Read from file
   ifstream my_fstream (expt_f_name);
   RSJresource expt_container = RSJresource (my_fstream)[expt_name];
+  MU = expt_container["mu"].as<double>();
+  ext_dist = expt_container["ext_dist"].as<double>();
   double drill_angle = expt_container["angle_g"].as<double>() * PI; // radian, pointing at the drill point
   LINK myStartLink(expt_container["goal"][0].as<int>(), expt_container["goal"][1].as<int>(), drill_angle + PI, 0);
   LINK myGoalLink(expt_container["start"][0].as<int>(), expt_container["start"][1].as<int>(), (expt_container["angle_s"].as<double>() + 1) * PI, 0);
@@ -330,63 +337,52 @@ int main(int argc, char *argv[])
     cout << "Search 1 never reached the goal!" << endl;
     sprintf(imgFname, "outfiles/%s_MU_%g_debug_search_1.png", argv[0], MU);
     imwrite(imgFname, searchInstance_1.realtime_display);
-
+    putText(searchInstance_1.realtime_display,
+            "No valid path found.",
+            CvPoint(10, searchInstance_1.realtime_display.rows - 10 - 15),
+            FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(0, 0, 0), 1, CV_AA, false);
+    putText(searchInstance_1.realtime_display,
+            "Press any key to exit",
+            CvPoint(10, searchInstance_1.realtime_display.rows - 10),
+            FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(0, 0, 0), 1, CV_AA, false);
     imshow("Display window", searchInstance_1.realtime_display);
-	  cout << "Press any key to exit" << endl;
+	  cout << GREEN << "Click on 'Display window' then press any key to exit" << RESET << endl;
     cvWaitKey();
     return 0;
   }
 	cout << "Path 1's size: " << path.size() << endl;
 
-	LINK thisLk, lastLk;
-	thisLk = * path.back();
 	//vector<LINK> allLks;
-	allLks.push_back(thisLk);
 	double cost = 0.0;
 
   //calculate for cost and build path 1
-	for (int a = path.size() - 2; a >= 0; --a) {
-		lastLk = thisLk;
-
-		thisLk = * path[a];
-		allLks.push_back(thisLk);
-
-		cost += sqrt(pow(thisLk.x - lastLk.x, 2) + pow(thisLk.y - lastLk.y, 2));
+	for (int a = path.size() - 1; a >= 0; --a) {
+		allLks.push_back(* path[a]);
+		cost += path[a]->getPoint().getDistance(path[a]->getHead());
 	}
 
   // update salars of the forces of each LINK
-  cout << "updating force scalars" << endl;
+  cout << "Updating force scalars" << endl;
   for(int i = 0; i < (allLks.size() - 1); i++){
     for(int j = 0; j < allLks[i].forces.size(); j++){
-      // cout << allLks[i].forces[j][4] << " <== " << allLks.back().forces[j][4] << endl;
       allLks[i].forces[j][4] = allLks.back().forces[j][4];
     }
   }
-  for(int i = 0; i < allLks.size(); i++){
-    if (i == 0) {
-      allLks[i].getQP(HEADMASS, cos(myStartLink.theta) * DRILLFORCE, sin(myStartLink.theta) * DRILLFORCE);
-    }else{
-      allLks[i].getQP(LINKMASS, allLks[i - 1].QPfx, allLks[i - 1].QPfy, allLks[i - 1].QPt);
-    }
-    // cout << "Segment " << i << ": " << allLks[i].QPfx << ", " << allLks[i].QPfy << ", " << allLks[i].QPt << endl;
-  }
-  cout << "scalars updating accomplished" << endl;
+  cout << "Scalars updating accomplished" << endl;
 
 	//plot the shortcuts
 	for(int b = 0; b < (allLks.size() - 1); b++){
-		lastLk = allLks[b];
-		thisLk = allLks[b + 1];
-
-		line(searchInstance_1.realtime_display, cv_plot_coord(lastLk.x, lastLk.y),
-				cv_plot_coord((thisLk.x + (2 * AA + thisLk.expansion * L) * cos(thisLk.theta)),
-                      (thisLk.y + (2 * AA + thisLk.expansion * L) * sin(thisLk.theta))),
+		line(searchInstance_1.realtime_display,
+        cv_plot_coord(allLks[b]),
+				cv_plot_coord(allLks[b + 1].getHead()),
         CV_RGB(255, 153, 51), LINE_THICKNESS);
 	}
 
 
   // plot the skeleton
   for(auto i : sk_cost){
-    searchInstance_1.cvPlotPoint(searchInstance_1.realtime_display, cv_plot_coord(i.x, i.y), CV_RGB(81, 0, 165), VERTEX_SIZE * 2);
+    searchInstance_1.cvPlotPoint(searchInstance_1.realtime_display,
+      cv_plot_coord(i), CV_RGB(81, 0, 165), VERTEX_SIZE * 2);
   }
 
   //plot the path
@@ -396,8 +392,10 @@ int main(int argc, char *argv[])
 	}
 
 	// plot start link and goal point
-	searchInstance_1.cvPlotPoint(searchInstance_1.realtime_display, cv_plot_coord(searchInstance_1.startLink.x, searchInstance_1.startLink.y), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
-	searchInstance_1.cvPlotPoint(searchInstance_1.realtime_display, cv_plot_coord(searchInstance_1.goalLink.x, searchInstance_1.goalLink.y), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
+	searchInstance_1.cvPlotPoint(searchInstance_1.realtime_display,
+    cv_plot_coord(searchInstance_1.startLink), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
+	searchInstance_1.cvPlotPoint(searchInstance_1.realtime_display,
+    cv_plot_coord(searchInstance_1.goalLink), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
 
   //plot forces
   if (allLks.back().forces.empty()){
@@ -405,10 +403,6 @@ int main(int argc, char *argv[])
   }else{
     printf("%d touching point(s) detected\n", allLks.back().forces.size() / 2);
     for(auto i : allLks.back().forces){
-      // cout << "Force:";
-      // for(auto j : i)
-      //   printf(" [%g]", j);
-      // cout << endl;
       line(searchInstance_1.realtime_display,
             cv_plot_coord(i[2], i[3]),
             cv_plot_coord(i[2] + i[0] * i[4] / DRILLFORCE * 4 * AA,
@@ -465,8 +459,8 @@ int main(int argc, char *argv[])
             << searchInstance_1.searchDuration - 60.0 * (int)floor(searchInstance_1.searchDuration / 60.0) << " sec(s), vertices expanded: "
             << searchInstance_1.expand_count << endl;
 
-  imshow("Display window", searchInstance_1.realtime_display);
-  cvWaitKey(1);
+  // imshow("Display window", searchInstance_1.realtime_display);
+  // cvWaitKey(1);
 
   // path 2 searching
   searchLINK searchInstance_2(allLks.back(), myGoalLink, 1); // last parameter 1 = full AA star without projection
@@ -481,9 +475,16 @@ int main(int argc, char *argv[])
     cout << "Didn't found valid path 2!\nSearching ended." << endl;
     sprintf(imgFname, "outfiles/%s_MU_%g_debug_search_2.png", argv[0], MU);
     imwrite(imgFname, searchInstance_2.realtime_display);
-
+    putText(searchInstance_2.realtime_display,
+            "No valid path found.",
+            CvPoint(10, searchInstance_2.realtime_display.rows - 10 - 15),
+            FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(0, 0, 0), 1, CV_AA, false);
+    putText(searchInstance_2.realtime_display,
+            "Press any key to exit",
+            CvPoint(10, searchInstance_2.realtime_display.rows - 10),
+            FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(0, 0, 0), 1, CV_AA, false);
     imshow("Display window", searchInstance_2.realtime_display);
-	  cout << "Press any key to continue" << endl;
+	  cout << GREEN << "Click on 'Display window' then press any key to exit" << RESET << endl;
     cvWaitKey();
     return 0;
   }
@@ -498,17 +499,17 @@ int main(int argc, char *argv[])
 
   //plot the shortcuts
 	for(int b = 0; b < (allLks.size() - 1); b++){
-		lastLk = allLks[b];
-		thisLk = allLks[b + 1];
-
-		line(searchInstance_2.realtime_display, cv_plot_coord(lastLk.x, lastLk.y),
-				cv_plot_coord((thisLk.x + (2 * AA + thisLk.expansion * L) * cos(thisLk.theta)), (thisLk.y + (2 * AA + thisLk.expansion * L) * sin(thisLk.theta))), CV_RGB(255, 153, 51), LINE_THICKNESS);
+		line(searchInstance_2.realtime_display,
+      cv_plot_coord(allLks[b]),
+			cv_plot_coord(allLks[b + 1].getHead()),
+      CV_RGB(255, 153, 51), LINE_THICKNESS);
 	}
 
 
   // plot the skeleton
   for(auto i : sk_cost){
-    searchInstance_2.cvPlotPoint(searchInstance_2.realtime_display, cv_plot_coord(i.x, i.y), CV_RGB(81, 0, 165), VERTEX_SIZE * 2);
+    searchInstance_2.cvPlotPoint(searchInstance_2.realtime_display,
+      cv_plot_coord(i), CV_RGB(81, 0, 165), VERTEX_SIZE * 2);
   }
 
   //plot the path
@@ -517,8 +518,10 @@ int main(int argc, char *argv[])
 	}
 
 	// plot start link and goal point
-	searchInstance_2.cvPlotPoint(searchInstance_2.realtime_display, cv_plot_coord(searchInstance_1.startLink.x, searchInstance_1.startLink.y), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
-	searchInstance_2.cvPlotPoint(searchInstance_2.realtime_display, cv_plot_coord(searchInstance_2.goalLink.x, searchInstance_2.goalLink.y), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
+	searchInstance_2.cvPlotPoint(searchInstance_2.realtime_display,
+    cv_plot_coord(searchInstance_1.startLink), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
+	searchInstance_2.cvPlotPoint(searchInstance_2.realtime_display,
+    cv_plot_coord(searchInstance_2.goalLink), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
 
   //allLks.back().makeHead();
 	printf("Path's total length: %g, %d link(s)\n", cost, allLks.size());
@@ -591,16 +594,14 @@ int main(int argc, char *argv[])
 
   //plot the shortcuts
 	for(int b = 0; b < (dis_path.size() - 1); b++){
-		lastLk = dis_path[b];
-		thisLk = dis_path[b + 1];
-
-		line(forpaper, cv_plot_coord(lastLk.x, lastLk.y),
-				cv_plot_coord((thisLk.x + (2 * AA + thisLk.expansion * L) * cos(thisLk.theta)), (thisLk.y + (2 * AA + thisLk.expansion * L) * sin(thisLk.theta))), CV_RGB(255, 153, 51), LINE_THICKNESS);
+		line(forpaper,
+      cv_plot_coord(dis_path[b]),
+			cv_plot_coord(dis_path[b + 1].getHead()), CV_RGB(255, 153, 51), LINE_THICKNESS);
 	}
 
   // plot the skeleton
   for(auto i : sk_cost){
-    searchInstance_2.cvPlotPoint(forpaper, cv_plot_coord(i.x, i.y), CV_RGB(81, 0, 165), VERTEX_SIZE * 2);
+    searchInstance_2.cvPlotPoint(forpaper, cv_plot_coord(i), CV_RGB(81, 0, 165), VERTEX_SIZE * 2);
   }
 
   //plot the path
@@ -638,14 +639,22 @@ int main(int argc, char *argv[])
           localtm->tm_sec,
           _OS_FLAG == 1? "Linux" : "Mac");
 	imwrite(regex_replace(regex_replace(imgFname, regex("\n"), ""), regex(":"), "_"), forpaper);
+  putText(forpaper,
+    "All search completed.",
+    CvPoint(10, forpaper.rows - 10 - 15),
+    FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(0, 0, 0), 1, CV_AA, false);
+  putText(forpaper,
+    "Press any key to exit",
+    CvPoint(10, forpaper.rows - 10),
+    FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(0, 0, 0), 1, CV_AA, false);
+	cout << GREEN <<  "Click on 'Display window' then press any key to save and exit" << RESET << endl;
 	imshow("Display window", forpaper);
-	cout << "Press any key to save and exit" << endl;
   cvWaitKey();
 
   // ================================================================================================================
 
-
-  forceFile << "In World Coordinate System (WCS), positive y goes downwards; in LINK Coordinate System (LCS) for both ends, positive x goes towards the center of the link, positive y goes clockwise lateral; positive torque in both systems goes inwards the screen\nIndex of LINK starting from the head of the robot, data format: (force in X LCS (N), force in Y LCS (N), torque (Nm)) (force in X WCS (N), force in Y WCS (N), torque (Nm))" << endl << endl;
+  forceFile << "In World Coordinate System (WCS), positive y goes downwards; in LINK Coordinate System (LCS) for both ends, positive x goes towards the center of the link, positive y goes clockwise lateral; positive torque in both systems goes inwards the screen" << endl
+    << "Index of LINK starting from the head of the robot, data format: (force in X LCS (N), force in Y LCS (N), torque (Nm)) (force in X WCS (N), force in Y WCS (N), torque (Nm))" << endl << endl;
 
   GRAVITYDIR;
   forceFile << "Gravity: [" << g[0] << ", " << g[1] << "]" << " m/s^2" << endl;
@@ -671,16 +680,15 @@ int main(int argc, char *argv[])
   }
   forceFile << endl;
 
-  int forceNumber = 0;
   double Fx_end, Fy_end, T_end;
   double greatestForce = 0.0, greatestTorque = 0.0;
   double forceModule;
   for(int b = 0; b < allLks.size(); b++){
     // bool newforce = false;
-    if (allLks[b].brace && forceNumber != allLks[b].forces.size()){ // if any new force found
+    if (allLks[b].brace){ // if any new force found
         // newforce = true;
-        forceFile << "Normal force " << floor((double)allLks[b].forces.size() / 2)
-                  << " and Friction " << floor((double)allLks[b].forces.size() / 2) << " acting on LINK " << b << endl;
+        forceFile << "Normal force " << floor((double)allLks[b].forces.size() / 2) - 1
+                  << " and Friction " << floor((double)allLks[b].forces.size() / 2) - 1 << " acting on LINK " << b << endl;
     }
 
     forceFile << "LINK " << b << ":";
@@ -726,6 +734,7 @@ int main(int argc, char *argv[])
           localtm->tm_sec);
   configFile.open(imgFname);
   configFile << imgFname << endl << endl; // title line
+  configFile << "expansion discretization: " << ext_dist << endl;
   configFile << "Data format: x, y, theta, expansion" << endl << endl;
 
   for(int i = 0; i < allLks.size(); i++){
@@ -734,6 +743,6 @@ int main(int argc, char *argv[])
   configFile << endl;
 
   configFile.close();
-
+  cout << "Exited" << endl;
   return 0;
 }
