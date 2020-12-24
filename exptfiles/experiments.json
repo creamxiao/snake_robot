@@ -5,7 +5,9 @@
     start:     [77, 218],
     angle_s:   1.0,
     goal:      [41, 29],
-    angle_g:   1.75
+    angle_g:   1.75,
+    mu:        0.3, // coefficient of static friction
+    ext_dist:  0.5 // if no result, try 0.25
     },
   '26a':
     {
@@ -13,7 +15,9 @@
     start:     [24, 40],
     angle_s:   0.0,
     goal:      [161, 111],
-    angle_g:   0.125
+    angle_g:   0.125,
+    mu:        0.3, // coefficient of static friction
+    ext_dist:  0.5 // if no result, try 0.25
     },
   '26b':
     {
@@ -21,7 +25,9 @@
     start:     [24, 40],
     angle_s:   0.0,
     goal:      [161, 111],
-    angle_g:   0.25
+    angle_g:   0.25,
+    mu:        0.3, // coefficient of static friction
+    ext_dist:  0.5 // if no result, try 0.25
     },
   '26c':
     {
@@ -30,6 +36,8 @@
     angle_s:   0.0,
     goal:      [161, 111],
     angle_g:   0.375
+    mu:        0.3, // coefficient of static friction
+    ext_dist:  0.5 // if no result, try 0.25
     },
   '26d':
     {
@@ -37,7 +45,9 @@
     start:     [24, 40],
     angle_s:   0.0,
     goal:      [161, 111],
-    angle_g:   0.5
+    angle_g:   0.5,
+    mu:        0.3, // coefficient of static friction
+    ext_dist:  0.5 // if no result, try 0.25
     },
   '26e':
     {
@@ -45,7 +55,9 @@
     start:     [24, 40],
     angle_s:   0.0,
     goal:      [161, 111],
-    angle_g:   0.625
+    angle_g:   0.625,
+    mu:        0.3, // coefficient of static friction
+    ext_dist:  0.5 // if no result, try 0.25
     },
   '26f':
     {
@@ -53,6 +65,8 @@
     start:     [24, 40],
     angle_s:   0.0,
     goal:      [161, 111],
-    angle_g:   0.75
+    angle_g:   0.75,
+    mu:        0.3, // coefficient of static friction
+    ext_dist:  0.5 // if no result, try 0.25
     }
 }
