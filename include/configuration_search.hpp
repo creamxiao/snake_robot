@@ -850,7 +850,7 @@ public:
       vector<LINK> pathLks;
       for (int i = p.size() - 1; i >= 0; i--)
         pathLks.push_back(* p[i]);
-      if (display) pathLks.push_back(tn); // the new successor
+      if (display) pathLks.push_back(s->back()); // the new successor
 
       // Draw the path
       for(auto i : pathLks)
