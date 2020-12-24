@@ -22,17 +22,17 @@ public:
 
 	//constructor
 	passive_search_LINK(const LINK & startL, const LINK & goalL, const Mat & input_map){
+    grey_map = input_map.clone();
 		// read data for planning
     MIN_X = 0;
-		MAX_X = original_map.cols;
+		MAX_X = grey_map.cols;
 		MIN_Y = 0;
-		MAX_Y = original_map.rows;
+		MAX_Y = grey_map.rows;
     SAVE_FLAG = 0;
 
     this->startLink = startL;
     this->goalLink = goalL;
 
-    grey_map = input_map.clone();
     // cvtColor(grey_map, realtime_display, CV_GRAY2RGB);
     // resize(realtime_display, realtime_display, Size(), PLOT_SCALE, PLOT_SCALE, INTER_NEAREST);
 
