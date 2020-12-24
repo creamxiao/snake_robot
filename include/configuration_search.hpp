@@ -236,17 +236,39 @@ public:
 	}
 
   bool AreLinksIntersecting(const LINK & link1, const LINK & link2) const {
+    // cross product of vector(link1's start to link2's end) and vector(link2's end to link1's end)
     double v1 = (link2.getHeadX() - link1.x) * (link1.getHeadY() - link2.getHeadY())
               - (link2.getHeadY() - link1.y) * (link1.getHeadX() - link2.getHeadX());
+    // cross product of vector(link1's start to link2's start) and vector(link2's start to link1's end)
     double v2 = (link2.x - link1.x) * (link1.getHeadY() - link2.y)
               - (link2.y - link1.y) * (link1.getHeadX() - link2.x);
-
-    if (fabs(v1) + fabs(v2) > 0.0 // v1 and v2 not equal to 0 simultaneously
+    if (fabs(v1) + fabs(v2) > 0.0 // v1 and v2 not equal to 0 simultaneously (not co-linear)
       && (v1 * v2) <= 0.0) { // v1 * v2 <= 0
       return true;
-    }else{
-      return false;
+    }else if (fabs(v1) + fabs(v2) == 0.0){ // if they're co-linear
+      double sumD = link1.getPoint().getDistance(link2.getPoint()) // distance from link1's start to link2's start
+                  + link2.getPoint().getDistance(link1.getHead()) // distance from link2's start to link1's end
+                  + link1.getPoint().getDistance(link2.getHead()) // distance from link1's start to link2's end
+                  + link2.getHead().getDistance(link1.getHead()); // distance from link2's end to link1's end
+      double sumL = 2 * (link1.getLength() + link2.getLength()); // doubled sum of lengths of link1 and link2
+      if (sumD <= sumL) return true; // if they overlap, they intersect
     }
+
+    return false;
+  }
+
+  bool IsPathSelfTangled(const vector<LINK> & inputPath) {
+    //check if it crosses itself
+    for(int a = 0; a < (inputPath.size() - 2); a++){
+      for(int b = a + 2; b < inputPath.size(); b++){
+        if (AreLinksIntersecting(inputPath[a], inputPath[b])
+         && AreLinksIntersecting(inputPath[b], inputPath[a])){
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   bool IsPathSelfTangled(const vector<LINK> & inputPath) {
