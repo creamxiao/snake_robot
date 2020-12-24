@@ -242,10 +242,9 @@ public:
     // cross product of vector(link1's start to link2's start) and vector(link2's start to link1's end)
     double v2 = (link2.x - link1.x) * (link1.getHeadY() - link2.y)
               - (link2.y - link1.y) * (link1.getHeadX() - link2.x);
-    if (fabs(v1) + fabs(v2) > 0.0 // v1 and v2 not equal to 0 simultaneously (not co-linear)
-      && (v1 * v2) <= 0.0) { // v1 * v2 <= 0
-      return true;
-    }else if (fabs(v1) + fabs(v2) == 0.0){ // if they're co-linear
+    if (fabs(v1) + fabs(v2) > 0.0){ // if not co-linear
+      if ((v1 * v2) <= 0.0) return true; // v1 * v2 <= 0
+    }else{ // if they're co-linear
       double sumD = link1.getPoint().getDistance(link2.getPoint()) // distance from link1's start to link2's start
                   + link2.getPoint().getDistance(link1.getHead()) // distance from link2's start to link1's end
                   + link1.getPoint().getDistance(link2.getHead()) // distance from link1's start to link2's end
