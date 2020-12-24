@@ -23,17 +23,11 @@ public:
   double gAccX, gAccY; // accumulated gravity on this link
   double gAccT; // accumulated gravity-torque about the end of this link
 
-  double QPfx, QPfy; // force on this link from quadratic programing
-  double QPt; // torque about the end of this link from quadratic programing
-
 	LINK() {
     brace = false;
     gAccX = 0;
     gAccY = 0;
     gAccT = 0;
-    QPfx = 0;
-    QPfy = 0;
-    QPt = 0;
   }
 
 	LINK(double x, double y, double theta, double expansion)
@@ -46,9 +40,18 @@ public:
     gAccX = 0;
     gAccY = 0;
     gAccT = 0;
-    QPfx = 0;
-    QPfy = 0;
-    QPt = 0;
+  }
+
+  LINK(POINT head, POINT rear)
+	{
+		this->x = head.x;
+		this->y = head.y;
+		this->theta = atan2(rear.y - head.y, rear.x - head.x);
+		this->expansion = (sqrt(pow(head.x - rear.x, 2) + pow(head.y - rear.y, 2)) - 2 * AA) / L;
+    brace = false;
+    gAccX = 0;
+    gAccY = 0;
+    gAccT = 0;
   }
 
   void reverseLINK(){
@@ -82,9 +85,10 @@ public:
     return (fabs(x - n.x) >= INFINITESIMAL_DOUBLE_2 || fabs(y - n.y) >= INFINITESIMAL_DOUBLE_2 || fabs(theta - n.theta) >= (INFINITESIMAL_DOUBLE_2 / 10) || fabs(expansion - n.expansion) >= INFINITESIMAL_DOUBLE_2);
 	}
 
-	bool reachGoal(const LINK & n) {
-		//check the other end of the link
-    if (fabs(this->theta - n.theta) > INFINITESIMAL_DOUBLE_2) return false;
+	bool reachGoal(const LINK & n, double range = INFINITESIMAL_DOUBLE_2) {
+		//check orientation
+    if (fmod(fabs(this->theta - n.theta), 2 * PI) > range) return false;
+
     for(double i = this->getLength(); i > 0.0; i-=0.4){
       if(sqrt(pow(this->x + i * cos(this->theta) - n.x, 2) + pow(this->y + i * sin(this->theta)- n.y, 2)) <= 1) {
         //printf("head theta: %.3f PI, goal theta: %.3f PI, fabs(this->theta - n.theta) = %g\n", this->theta / PI, n.theta / PI, fabs(this->theta - n.theta));
@@ -171,43 +175,6 @@ public:
             - (2 * AA + L * expansion) * sin(theta + PI) * parentAccFX
             + (2 * AA + L * expansion) / 2 * cos(theta + PI) * g[1] * mass
             - (2 * AA + L * expansion) / 2 * sin(theta + PI) * g[0] * mass) * P2M_SCALE;
-    /*cout << "gAccT = parentT + ((2 * AA + L * expansion) * cos(theta + PI) * parentY - (2 * AA + L * expansion) * sin(theta + PI) * parentX + (2 * AA + L * expansion) / 2 * cos(theta + PI) * g[1] * mass - (2 * AA + L * expansion) / 2 * sin(theta + PI) * g[0] * mass) * P2M_SCALE;" << endl;
-    cout << gAccT << " = " << parentT << " + ((2 * " << AA << " + " << L << " * " << expansion << ") * cos(" << theta << " + " << PI << ") * " << parentY << " - (2 * " << AA << " + " << L << " * " << expansion << ") * sin(" << theta << " + " << PI << ") * " << parentX << " + (2 * " << AA << " + " << L << " * " << expansion << ") / 2 * cos(" << theta << " + " << PI << ") * " << g[1] << " * " << mass << " - (2 * " << AA << " + " << L << " * " << expansion << ") / 2 * sin(" << theta << " + " << PI << ") * " << g[0] << " * " << mass << ") * " << P2M_SCALE << endl;
-    cout << gAccT << " = " << parentT << " + (" << (2 * AA + L * expansion) * cos(theta + PI) << " * " << parentY << " - " << (2 * AA + L * expansion) * cos(theta + PI) << " * " << parentX << " + " << (2 * AA + L * expansion) / 2 * cos(theta + PI) << " * "<< g[1] << " * " << mass << " - " << (2 * AA + L * expansion) / 2 * sin(theta + PI) << " * " << g[0] << " * " << mass << ") * " << P2M_SCALE << endl;*/
-  }
-
-  void getQP(double mass, double parentFX = 0.0, double parentFY = 0.0, double parentT = 0.0){ // the torque is about the end of this LINK
-    GRAVITYDIR;
-    double newFX = 0.0, newFY = 0.0, newT = 0.0;
-    if (brace){
-      newFX = forces.rbegin()[1][0] * forces.rbegin()[1][4]
-              + forces.back()[0] * forces.back()[4];
-      newFY = forces.rbegin()[1][1] * forces.rbegin()[1][4]
-              + forces.back()[1] * forces.back()[4];
-
-              // from normal force acting on current link
-      newT = (forces.rbegin()[1][2] - getHeadX()) * forces.rbegin()[1][1] * forces.rbegin()[1][4]
-              - (forces.rbegin()[1][3] - getHeadY()) * forces.rbegin()[1][0] * forces.rbegin()[1][4];
-              // from friction acting on current link
-              + (forces.back()[2] - getHeadX()) * forces.back()[1] * forces.back()[4]
-              - (forces.back()[3] - getHeadY()) * forces.back()[0] * forces.back()[4];
-    }
-    QPfx = parentFX + g[0] * mass + newFX;
-    QPfy = parentFY + g[1] * mass + newFY;
-    QPt = parentT
-            // from parent force
-            + ((2 * AA + L * expansion) * cos(theta + PI) * parentFY
-            - (2 * AA + L * expansion) * sin(theta + PI) * parentFX
-            // from gravity of current link
-            + (2 * AA + L * expansion) / 2 * cos(theta + PI) * g[1] * mass
-            - (2 * AA + L * expansion) / 2 * sin(theta + PI) * g[0] * mass
-            + newT
-            ) * P2M_SCALE;
-
-    // cout << "brace " << (brace? "true" : "false")
-    //     << (brace? ", newFX " + to_string(newFX) + " N": "")
-    //     << (brace? ", newFY " + to_string(newFY) + " N": "")
-    //     << (brace? ", newT " + to_string(newT * P2M_SCALE) + " Nm": "") << endl;
   }
 };
 

@@ -10,6 +10,7 @@
 // #include "LINK.hpp"
 // #include "POINT.hpp"
 #include <qpOASES.hpp> // quadratic programming
+#include "passive_config_search.hpp"
 
 // using namespace std;
 // using namespace cv;
@@ -20,26 +21,9 @@ extern vector<POINT> sk_heu;
 extern vector<LINK> allLks;
 extern Point ** SkeletonMat;
 extern double MU;
+extern double ext_dist;
 extern Mat original_map;
 extern string program_Name;
-
-class SEG {
-public:
-	POINT pt1;
-	POINT pt2;
-	SEG() {};
-	SEG(POINT p1, POINT p2)
-	{
-		this->pt1 = p1;
-		this->pt2 = p2;
-	};
-
-	bool operator == (const SEG & n) const {
-		if ((pt1 == n.pt1 && pt2 == n.pt2) || (pt1 == n.pt2 && pt2 == n.pt1)) return (true);
-		return (false);
-	}
-
-};
 
 class searchLINK : public AStar::Algorithm<searchLINK, LINK, double>{
 //class searchLINK : public AStarProblem<LINK>{
@@ -56,7 +40,7 @@ public:
 	// clock_t start_time;
 	double preCalDuration, searchDuration;
   struct timespec start_time, finish_time;
-	int flagmin, SAVE_FLAG;
+	int SAVE_FLAG;
 
 	// variables decsribing problem
 	int MAX_X, MIN_X, MAX_Y, MIN_Y;
@@ -142,7 +126,6 @@ public:
 	//constructor
 	searchLINK(LINK startL, LINK goalL, int modeInput){
 
-		flagmin = -1;
     SAVE_FLAG = 0;
 
 		// read data for planning
@@ -210,9 +193,6 @@ public:
 
       time_t now = time(0);
 	    tm* localtm = localtime(&now);
-      printf("completed! Pre-cal time: %g\nPress any key to start searching for the bracing configuration\n",
-              preCalDuration);
-      imshow("Display window", pre_result);
       imwrite("outfiles/" + program_Name + "_"
               + to_string(1900 + localtm->tm_year) + "_"
               + to_string(1 + localtm->tm_mon) + "_"
@@ -220,6 +200,17 @@ public:
               + to_string(localtm->tm_hour) + "_"
               + to_string(localtm->tm_min) + "_"
               + to_string(localtm->tm_sec) + "_shortest_search.png", pre_result);
+      cout << "Completed! Pre-cal time: " << preCalDuration << endl;
+      cout << GREEN << "Click on 'Display window' then press any key to start searching for the bracing configuration" << RESET << endl;
+      putText(pre_result,
+        "Pre-calculation completed",
+        CvPoint(10, pre_result.rows - 10 - 15),
+        FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(0, 0, 0), 1, CV_AA, false);
+      putText(pre_result,
+        "Press any key to continue",
+        CvPoint(10, pre_result.rows - 10),
+        FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(0, 0, 0), 1, CV_AA, false);
+      imshow("Display window", pre_result);
       cvWaitKey();
       cout << "Started..." << endl;
       // destroyWindow("Precalculation");
@@ -235,7 +226,7 @@ public:
 
 		//namedWindow( "Display window", WINDOW_AUTOSIZE);
 		//imshow("Display window", realtime_display);
-		//waitKey(0);
+		//waitKey();
     line(realtime_display,
         cv_plot_coord(startLink),
 			  cv_plot_coord(startLink.getHead()),
@@ -244,160 +235,26 @@ public:
 		clock_gettime(CLOCK_MONOTONIC, &start_time);
 	}
 
-  bool InterOnSeg(POINT intersectP, SEG seg, bool m) {
-    //for checking if intersection point is on the segment
-    //point on any end of the segment => NOT on the segment
+  bool AreLinksIntersecting(const LINK & link1, const LINK & link2) const {
+    double v1 = (link2.getHeadX() - link1.x) * (link1.getHeadY() - link2.getHeadY())
+              - (link2.getHeadY() - link1.y) * (link1.getHeadX() - link2.getHeadX());
+    double v2 = (link2.x - link1.x) * (link1.getHeadY() - link2.y)
+              - (link2.y - link1.y) * (link1.getHeadX() - link2.x);
 
-
-    //m = false: normal mode, check if the point is on the segment
-    //m = true; on-ends mode, point on either of ends of segment counted as on the segment
-    if (seg.pt1.x < seg.pt2.x) {
-      if (seg.pt1.x < intersectP.x && intersectP.x < seg.pt2.x) {
-        return true;
-      }else if (m){
-        if (seg.pt1.x == intersectP.x || intersectP.x == seg.pt2.x)
-          return true;
-      }
-    }
-    else if (seg.pt2.x < seg.pt1.x) {
-      if (seg.pt2.x < intersectP.x && intersectP.x < seg.pt1.x) {
-        return true;
-      }else if (m){
-        if (seg.pt1.x == intersectP.x || intersectP.x == seg.pt2.x)
-          return true;
-      }
-    }
-    else if (seg.pt1.y < seg.pt2.y) {//if the segment is vertical
-      if (seg.pt1.y < intersectP.y && intersectP.y < seg.pt2.y) {
-        return true;
-      }else if (m){
-        if (seg.pt1.y == intersectP.y || intersectP.y == seg.pt2.y)
-          return true;
-      }
-    }
-    else if (seg.pt2.y < seg.pt1.y) {
-      if (seg.pt2.y < intersectP.y && intersectP.y < seg.pt1.y) {
-        return true;
-      }else if (m){
-        if (seg.pt1.y == intersectP.y || intersectP.y == seg.pt2.y)
-          return true;
-      }
-    }
-    else {
-      printf("Error! The points constructing the segment overlap! POINT1:(%2lf, %2lf) POINT2:(%2lf, %2lf)\n",
-              seg.pt1.x, seg.pt1.y, seg.pt2.x, seg.pt2.y);
-    }
-
-    return false;
-
-  }
-
-  int CheckPtStatus(SEG s, POINT p, bool CheckOnSeg) {
-    //chech a point is on which side of the reference segment
-    //if CheckOnSeg == true, return 2 when the point is on the segment(not including on both ends), -2 for not on
-    //if CheckOnSeg == false, return 0 and don't check if the point is on the segment
-
-    //left and right hand sides of the line equation
-    double LHS = (s.pt2.x - s.pt1.x) * (p.y - s.pt1.y);
-    double RHS = (s.pt2.y - s.pt1.y) * (p.x - s.pt1.x);
-    //on one side
-    if (LHS > RHS)
-      return 1;
-    //on the other side
-    if (LHS < RHS)
-      return -1;
-    //point is on the line
-    if (LHS == RHS) {
-      if (CheckOnSeg) {
-        if (InterOnSeg(p, s, true)) {
-          //if on the segment
-          return 2;
-        }
-        else {
-          //if not
-          return -2;
-        }
-      }
-      else {
-        //not care about if the position of the point is on the segment
-        return 0;
-      }
-    }
-  }
-
-  bool CheckSegIntersect(SEG seg1, SEG seg2) {
-    //check if there's an intersection of 2 segments
-    //m = false, not including both ends of segments
-    //m = true, including both ends
-
-
-    double x, y;
-    //dominator
-    double dom = ((seg1.pt2.y - seg1.pt1.y) * (seg2.pt2.x - seg2.pt1.x)
-                - (seg2.pt2.y - seg2.pt1.y) * (seg1.pt2.x - seg1.pt1.x));
-
-    //if parallel
-    if (dom == 0) {
-      //if overlap, it is considered as an intersection
-      if (CheckPtStatus(seg1, seg2.pt1, true) == 2 || CheckPtStatus(seg1, seg2.pt2, true) == 2 ||
-        CheckPtStatus(seg2, seg1.pt1, true) == 2 || CheckPtStatus(seg2, seg1.pt2, true) == 2) {
-        return true;
-      }
-      else if (((seg1.pt1.x == seg2.pt1.x && seg1.pt1.y == seg2.pt1.y)
-              && (seg1.pt2.x == seg2.pt2.x && seg1.pt2.y == seg2.pt2.y))
-            || ((seg1.pt1.x == seg2.pt2.x && seg1.pt1.y == seg2.pt2.y)
-              && (seg1.pt2.x == seg2.pt1.x && seg1.pt2.y == seg2.pt1.y))){
-        //if identical with the other segment
-        return true;
-      }
-      //if not overlap
+    if (fabs(v1) + fabs(v2) > 0.0 // v1 and v2 not equal to 0 simultaneously
+      && (v1 * v2) <= 0.0) { // v1 * v2 <= 0
+      return true;
+    }else{
       return false;
     }
-
-    //if not parallel
-    //coordinates of intersection point
-    x = (((seg1.pt2.y - seg1.pt1.y) * seg1.pt1.x - (seg1.pt2.x - seg1.pt1.x) * seg1.pt1.y)
-          * (seg2.pt2.x - seg2.pt1.x)
-      - ((seg2.pt2.y - seg2.pt1.y) * seg2.pt1.x - (seg2.pt2.x - seg2.pt1.x) * seg2.pt1.y)
-          * (seg1.pt2.x - seg1.pt1.x))
-      / dom;
-
-    y = (((seg2.pt2.y - seg2.pt1.y) * seg2.pt1.x - (seg2.pt2.x - seg2.pt1.x) * seg2.pt1.y)
-          * (seg1.pt2.y - seg1.pt1.y)
-      - ((seg1.pt2.y - seg1.pt1.y) * seg1.pt1.x - (seg1.pt2.x - seg1.pt1.x) * seg1.pt1.y)
-          * (seg2.pt2.y - seg2.pt1.y))
-      / (-dom);
-
-
-    //check if intersection point is not on any extension of segments
-    if (InterOnSeg(POINT(x, y), seg1, true) && InterOnSeg(POINT(x, y), seg2, true)){
-      return true;
-    }
-    return false;
   }
 
-  bool IsPathSelfTangled(vector<LINK> inputPath){
-
-    vector<POINT> path;
-    for(auto it : inputPath){
-      path.push_back(it.getPoint());
-    }
-    path.push_back(inputPath.back().getHead());
-
-    vector<int> h, hu, t;
-    POINT thisPta, lastPta, thisPtb, lastPtb;
-
+  bool IsPathSelfTangled(const vector<LINK> & inputPath) {
     //check if it crosses itself
-    thisPta = path.front();
-    for(int a = 1; a < (path.size() - 2); a++){
-      lastPta = thisPta;
-      thisPta = path[a];
-
-      thisPtb = path[a + 1];
-      for(int b = a + 2; b < path.size(); b++){
-        lastPtb = thisPtb;
-        thisPtb = path[b];
-        if (CheckSegIntersect(SEG(lastPta, thisPta), SEG(lastPtb, thisPtb))){
+    for(int a = 0; a < (inputPath.size() - 2); a++){
+      for(int b = a + 2; b < inputPath.size(); b++){
+        if (AreLinksIntersecting(inputPath[a], inputPath[b])
+         && AreLinksIntersecting(inputPath[b], inputPath[a])){
           return true;
         }
       }
@@ -409,39 +266,10 @@ public:
   void getClosestPt(LINK & n){ // get the closest point of sk_cost/sk_deu to the end of this link
     int rdY = min(MAX_Y - 1, max(MIN_Y, (int)round(n.getHeadY())));
     int rdX = min(MAX_X - 1, max(MIN_X, (int)round(n.getHeadX())));
-    // if ((int)round(n.getHeadX()) < MIN_X){
-    //   cout << "exceed low X bound: " << (int)round(n.getHeadX()) << ", corrected: " << rdX << endl;
-    // }
-    // if ((int)round(n.getHeadY()) < MIN_Y){
-    //   cout << "exceed low Y bound: " << (int)round(n.getHeadY()) << ", corrected: " << rdY << endl;
-    // }
-    // if ((int)round(n.getHeadX()) >= MAX_X){
-    //   cout << "exceed upper X bound: " << (int)round(n.getHeadX()) << ", corrected: " << rdX << endl;
-    // }
-    // if ((int)round(n.getHeadY()) >= MAX_Y){
-    //   cout << "exceed upper Y bound: " << (int)round(n.getHeadY()) << ", corrected: " << rdY << endl;
-    // }
+
     Point ptIndex = SkeletonMat[rdY][rdX];
     n.iClosestP_cost = ptIndex.x;
     n.iClosestP_heu = ptIndex.y;
-  }
-
-  int getClosestIndex(POINT n){ // get the closest point of sk_cost/sk_deu to the end of this link
-    int rdY = min(MAX_Y - 1, max(MIN_Y, (int)round(n.y)));
-    int rdX = min(MAX_X - 1, max(MIN_X, (int)round(n.x)));
-    // if ((int)round(n.x) < MIN_X){
-    //   cout << "exceed low X bound: " << (int)round(n.x) << ", corrected: " << rdX << endl;
-    // }
-    // if ((int)round(n.y) < MIN_Y){
-    //   cout << "exceed low Y bound: " << (int)round(n.y) << ", corrected: " << rdY << endl;
-    // }
-    // if ((int)round(n.x) >= MAX_X){
-    //   cout << "exceed upper X bound: " << (int)round(n.x) << ", corrected: " << rdX << endl;
-    // }
-    // if ((int)round(n.y) >= MAX_Y){
-    //   cout << "exceed upper Y bound: " << (int)round(n.y) << ", corrected: " << rdY << endl;
-    // }
-    return SkeletonMat[rdY][rdX].x;
   }
 
   void forceDetector(LINK & n){//check reaction forces
@@ -661,21 +489,20 @@ public:
       int_t nWSR = 100;
 
       if (SUCCESSFUL_RETURN == exampleCP.init(HM, GM, AM, lb, ub, lbA, ubA, nWSR)){
-        printf("Able to balance drill force: (%g, %g), gravity: (%g, %g) and moment of gravity: %g\n",
-                DRILLFORCE * cos(drillLink.theta + PI),
-                DRILLFORCE * sin(drillLink.theta + PI),
-                n.gAccX, n.gAccY, n.gAccT);
+        // printf("Able to balance drill force: (%g, %g), gravity: (%g, %g) and moment of gravity: %g\n",
+                // DRILLFORCE * cos(drillLink.theta + PI),
+                // DRILLFORCE * sin(drillLink.theta + PI),
+                // n.gAccX, n.gAccY, n.gAccT);
         real_t xOpt[nV];
         exampleCP.getPrimalSolution(xOpt);
         for(int i = 0; i < nV; i++){
           n.forces[i][4] = xOpt[i];
-          printf("Force %s %d, primal scalar %g\n", ((i % 2 == 0)? "(N)": "(F)"), (int)(i / 2), xOpt[i]);
+          // printf("Force %s %d, primal scalar %g\n", ((i % 2 == 0)? "(N)": "(F)"), (int)(i / 2), xOpt[i]);
         }
         return true;
       }else{
         return false;
       }
-
     }else{// tapping
       int nV = n.forces.size() + 1, nC = n.forces.size() + 3;
       // nV = number of variables, nC = number of constraints
@@ -741,14 +568,11 @@ public:
 
       for(int_t i = 0; i < nC; i++){
         if (i == 0){
-          lbA[i] = -n.gAccX;
-          ubA[i] = -n.gAccX;
+          lbA[i] = ubA[i] = -n.gAccX;
         }else if (i == 1){
-          lbA[i] = -n.gAccY;
-          ubA[i] = -n.gAccY;
+          lbA[i] = ubA[i] = -n.gAccY;
         }else if (i == 2){
-          lbA[i] = -n.gAccT;
-          ubA[i] = -n.gAccT;
+          lbA[i] = ubA[i] = -n.gAccT;
         }else if (i < (n.forces.size() / 2 + 3)){
           lbA[i] = - 2 * MU * MAXFORCE;
           ubA[i] = 0.0;
@@ -921,39 +745,30 @@ public:
 
 	void getSuccessors(LINK & n, vector<LINK> * s, vector<double>* c) // *** This must be defined
 	{
-    GRAVITYDIR;
-    // if this is a dead end
-    if (!n.continue_expansion){
-      //cout << "No successor because it is told not to expand" << endl;
-      return;
-    }
     LINK tn;
     bool display;
     if (searchMode == 0){
       // force balance mode
 
       // successors
-      for(double i = 0.0; i <= 1; i+=EL){//expanding length: 0, 0.5, 1.0
+      for(double i = 0.0; i <= 1; i += ext_dist){//expanding length: 0, 0.5, 1.0
         for (int j = -2; j <= 2; j++){
           display = false;
-          //cout << "getting successor in the 1st search" << endl;
           //new position
-          tn.x = n.x + (AA * 2 + n.expansion * L) * cos(n.theta);
-          tn.y = n.y + (AA * 2 + n.expansion * L) * sin(n.theta);
+          tn.x = n.getHeadX();
+          tn.y = n.getHeadY();
           //new orientation
           tn.theta = n.theta + (double)j * 22.5 / 180 * PI;
 
           if (fabs(tn.theta - startLink.theta) > (1.5 * PI)) continue;
-          //printf("new link's theta = %g, degree = %g\n", tn.theta, tn.theta / PI * 180);
           tn.expansion = i;
-          //update forces status
-          tn.forces = n.forces;
-          forceDetector(tn);
           if (!isLinkAccessible(tn, n)){
             continue;
           }
 
-          getClosestPt(tn);
+          //update forces status
+          tn.forces = n.forces;
+          forceDetector(tn);
 
           // get the closest point to the new link
 
@@ -961,14 +776,14 @@ public:
           double torq = torqueCheck(tn);
 
           if (torq < 0.0){
-            //if (tn.theta > PI) printf("An upwards segment neglected due to torque, theta = %g\n", tn.theta);
-            over_torque_links.push_back(tn);
             line(realtime_display,
                   cv_plot_coord(tn),
                   cv_plot_coord(tn.getHead()),
                   CV_RGB(255, 0, 255), LINE_THICKNESS);
             continue;
           }
+
+          getClosestPt(tn);
 
           // calculate cost (distance between this point and the last point of sk_cost)
           double distance;
@@ -985,10 +800,11 @@ public:
           }
 
           //draw the new successor in grey
-          line(realtime_display, cv_plot_coord(tn.x, tn.y),
-            cv_plot_coord(tn.getHeadX(), tn.getHeadY()), CV_RGB(200, 200, 200), LINE_THICKNESS);
+          line(realtime_display,
+            cv_plot_coord(tn),
+            cv_plot_coord(tn.getHead()),
+            CV_RGB(200, 200, 200), LINE_THICKNESS);
 
-          //cout << "got cost value: " << distance / 2 << "(x2)" << endl;
           s->push_back(tn);
           c->push_back(distance / (AA * 2 + L)); // projection on the sk_cost
           display = true;
@@ -996,26 +812,22 @@ public:
       }
     }else if (searchMode == 1){
       // full a star without projection
-      for(double i = 0.0; i <= 1; i+=(EL/2)){//expanding length: 0, 0.25, 0.5, 0.75, 1.0
+      for(double i = 0.0; i <= 1; i += EL){//expanding length: 0, 0.25, 0.5, 0.75, 1.0
         for (int j = -2; j <= 2; j++){
-          //cout << "getting successor in the 2nd search with full AA star" << endl;
 
           //new position
-          tn.x = n.x + (AA * 2 + n.expansion * L) * cos(n.theta);
-          tn.y = n.y + (AA * 2 + n.expansion * L) * sin(n.theta);
+          tn.x = n.getHeadX();
+          tn.y = n.getHeadY();
           //new orientation
           tn.theta = n.theta + (double)j * 22.5 / 180 * PI;
-          //printf("new link's theta = %g, degree = %g\n", tn.theta, tn.theta / PI * 180);
           tn.expansion = i;
           //update forces status
           tn.forces = n.forces;
-          // getClosestPt(tn);
 
           if (!isLinkAccessible(tn, n) ){
-            //cout << "continued because of inaccessibility" << endl;
             if (!tn.reachGoal(goalLink)) continue;
           }
-          getClosestPt(tn);
+          // getClosestPt(tn);
 
           tn.getGraAcc(LINKMASS, n.gAccX, n.gAccY, n.gAccT);
           //draw the new successor in grey
@@ -1025,7 +837,7 @@ public:
               CV_RGB(200, 200, 200), LINE_THICKNESS);
 
           s->push_back(tn);
-          c->push_back((AA * 2 + L * tn.expansion) / (AA * 2 + L)); // projection on the sk_cost
+          c->push_back(tn.getLength() / (AA * 2 + L)); // projection on the sk_cost
 
           display = true;
         }
@@ -1033,59 +845,67 @@ public:
     }
 
     if (expand_count > (SAVE_FLAG * 10000)){
+      Mat process_display = realtime_display.clone();
       vector<LINK *> p = reconstructPointerPath(n);// Reconstruct the path with the previous link
       vector<LINK> pathLks;
       for (int i = p.size() - 1; i >= 0; i--)
         pathLks.push_back(* p[i]);
       if (display) pathLks.push_back(tn); // the new successor
 
-      // draw over-torque links
-      for(auto i : over_torque_links)
-        line(realtime_display, cv_plot_coord(i.x, i.y),
-          cv_plot_coord(i.getHeadX(), i.getHeadY()), CV_RGB(255, 0, 255), LINE_THICKNESS);
-
       // Draw the path
       for(auto i : pathLks)
-        line(realtime_display, cv_plot_coord(i.x, i.y),
-          cv_plot_coord(i.getHeadX(), i.getHeadY()), CV_RGB(0, 255, 0), LINE_THICKNESS);
+        line(process_display,
+          cv_plot_coord(i),
+          cv_plot_coord(i.getHead()),
+          CV_RGB(0, 255, 0), LINE_THICKNESS);
 
       // plot the skeleton
       for(auto i : sk_cost){
-        cvPlotPoint(realtime_display, cv_plot_coord(i.x, i.y), CV_RGB(81, 0, 165), VERTEX_SIZE * 2);
+        cvPlotPoint(process_display, cv_plot_coord(i), CV_RGB(81, 0, 165), VERTEX_SIZE * 2);
       }
 
+      clock_gettime(CLOCK_MONOTONIC, &finish_time);
+      searchDuration = (finish_time.tv_sec - start_time.tv_sec);
+      searchDuration += (finish_time.tv_nsec - start_time.tv_nsec) / 1000000000.0;
+      int h = (int)floor(searchDuration / 3600.0);
+      int m = (int)floor((searchDuration - h * 3600) / 60.0);
+      int s = (int)floor(searchDuration - h * 3600.0 - m * 60.0);
+      putText(process_display,
+          "Searching...",
+          CvPoint(10, process_display.rows - 10 - 15),
+          FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(0, 0, 0), 1, CV_AA, false);
+      putText(process_display,
+          "Search time: "
+          + (h != 0? to_string(h) + " h " : "")
+          + (m != 0? to_string(m) + " m " : "")
+          + to_string(s) + " s",
+          CvPoint(10, process_display.rows - 10),
+          FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(0, 0, 0), 1, CV_AA, false);
+
       if (searchMode == 1){
-        LINK thisLk, lastLk;
         //plot the shortcuts
         for(int b = 0; b < (allLks.size() - 1); b++){
-          lastLk = allLks[b];
-          thisLk = allLks[b + 1];
-
-          line(realtime_display, cv_plot_coord(lastLk.x, lastLk.y),
-              cv_plot_coord(thisLk.getHeadX(), thisLk.getHeadY()), CV_RGB(255, 153, 51), LINE_THICKNESS);
+          line(process_display,
+              cv_plot_coord(allLks[b]),
+              cv_plot_coord(allLks[b + 1].getHead()),
+              CV_RGB(255, 153, 51), LINE_THICKNESS);
         }
 
         //plot the robot
         for(auto b : allLks){
-          b.plotLINK(realtime_display);
+          b.plotLINK(process_display);
         }
       }
 
       // plot start link and goal point
-      cvPlotPoint(realtime_display, cv_plot_coord(startLink.getPoint()), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
-      cvPlotPoint(realtime_display, cv_plot_coord(goalLink.getPoint()), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
+      cvPlotPoint(process_display, cv_plot_coord(startLink.getPoint()), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
+      cvPlotPoint(process_display, cv_plot_coord(goalLink.getPoint()), CV_RGB(255, 0, 0), PLOT_SCALE * VERTEX_SIZE);
 
-      // namedWindow("Display window", WINDOW_AUTOSIZE);
-      sprintf(out_Name, "outfiles/link_path_%d_at_%d_successors.png", searchMode + 1, SAVE_FLAG);
-			// imwrite(out_Name, realtime_display);
-      imshow("Display window", realtime_display);
+      // sprintf(out_Name, "outfiles/link_path_%d_at_%d_successors.png", searchMode + 1, SAVE_FLAG);
+			// imwrite(out_Name, process_display);
+      imshow("Display window", process_display);
       cvWaitKey(1);
       SAVE_FLAG++;
-
-      // Erase the path
-      for(auto i : pathLks)
-        line(realtime_display, cv_plot_coord(i.x, i.y),
-          cv_plot_coord(i.getHeadX(), i.getHeadY()), CV_RGB(200, 200, 200), LINE_THICKNESS);
     }
   }
 
@@ -1101,9 +921,7 @@ public:
 
       if (closestIndex < (sk_heu.size() - 1)){ // if the cloeset is not the last point of the path
         // calculate the length from this point to the end
-
         double acc_length = n.iClosestP_heu == -1? 10000.0 : sk_heu[n.iClosestP_heu].distanceToEnd;
-        //cout << "got heuristic value: " << acc_length / 2 << "(x2) and searchMode is " << searchMode << endl;
         return (C4 * acc_length / (AA * 2 + L));
       }else{
         return 0;
@@ -1124,10 +942,9 @@ public:
     if (searchMode == 0){
       getClosestPt(startLink);
       startLink.getGraAcc(HEADMASS, 0, 0, 0);
-      // cout <<"Closest point of startlink: " << startLink.iClosestP_cost << endl;
       theStartLinks.push_back(startLink);
 
-      for(double i = EL; i < 1; i+= EL){
+      for(double i = ext_dist; i < 1; i += ext_dist){
         LINK d_startLink = LINK(startLink.x, startLink.y, startLink.theta, i);
         if (!isLinkAccessible(d_startLink, startLink)) continue;
         getClosestPt(d_startLink);
@@ -1141,9 +958,8 @@ public:
       }
 
     }else{
-      //theStartLinks.push_back(startLink);
       getClosestPt(startLink);
-      for(double i = 0.0; i <= 1; i+=(EL/2)){//expanding length: 0, 0.25, 0.5, 0.75, 1.0
+      for(double i = 0.0; i <= 1; i += EL){//expanding length: 0, 0.25, 0.5, 0.75, 1.0
         for (int j = -2; j <= 2; j++){
           LINK tn;
           //new position
@@ -1152,16 +968,16 @@ public:
           //new orientation
           tn.theta = startLink.theta + (double)j * 22.5 / 180 * PI;
           tn.expansion = i;
+          if (!isLinkAccessible(tn, startLink)){
+            // cout << "Getting startLINK continued because of inaccessibility" << endl;
+            continue;
+          }
 
           //update forces status
           tn.forces = startLink.forces;
           tn.getGraAcc(LINKMASS, startLink.gAccX, startLink.gAccY, startLink.gAccT);
 
           getClosestPt(tn);
-          if (!isLinkAccessible(tn, startLink)){
-            // cout << "Getting startLINK continued because of inaccessibility" << endl;
-            continue;
-          }
           //draw the new successor in red
           line(realtime_display,
               cv_plot_coord(tn),
@@ -1177,25 +993,7 @@ public:
 	bool stopSearch (LINK & n) {
     if (searchMode == 0){ // Check if the path is balanced, no need to reach the goal (entrance)
       if (n.brace){
-        // reject segments pointing back
-        int rootIndex = getClosestIndex(n.getPoint()), headIndex = getClosestIndex(n.getHead());
-        if (rootIndex > headIndex) {
-          return false;
-        }else if (rootIndex == headIndex){
-          int previousIndex, nextIndex;
-          if ((rootIndex + 1) >= sk_cost.size()){
-            nextIndex = rootIndex;
-            previousIndex = rootIndex - 1;
-          }else{
-            nextIndex = rootIndex + 1;
-            previousIndex = rootIndex;
-          }
-          double headingBack = (sk_cost[nextIndex].x - sk_cost[previousIndex].x) * sin(n.theta)
-                                - (sk_cost[nextIndex].y - sk_cost[previousIndex].y) * cos(n.theta);
-          if (headingBack < INFINITESIMAL_DOUBLE) return false;
-        }
-
-        // reject segments that have no feasible successor
+        // reject segments that have no feasible successor and are thus unable to form a feasible passive configuration
         bool haveFeasibleSuc = false;
         LINK tn;
         for(double i = 0.0; i <= 1; i+=(EL/2)){//expanding length: 0, 0.25, 0.5, 0.75, 1.0
@@ -1222,15 +1020,22 @@ public:
           // Reconstruct the path with the previous link
           vector<LINK*> p = reconstructPointerPath(n);
           vector<LINK> pathLks;
-          for (int i = p.size() - 1; i >= 0; i--)
+          for (int i = p.size() - 1; i >= 0; i--){
             pathLks.push_back(* p[i]);
-
+          }
           if (IsPathSelfTangled(pathLks)) return false;
 
           if(forceSpanningCheck(n, true, & pathLks)) {
-            clock_gettime(CLOCK_MONOTONIC, &finish_time);
-            searchDuration = (finish_time.tv_sec - start_time.tv_sec);
-            searchDuration += (finish_time.tv_nsec - start_time.tv_nsec) / 1000000000.0;
+            // fast search from current segment to goal to check self-tangling
+            passive_search_LINK search2(n, goalLink, grey_map);
+            search2.previousLks = pathLks;
+            search2.search();
+            vector<LINK*> p2 = search2.reconstructPointerPath(search2.paths.front());
+            if (p2.empty()) return false; // if not valid path
+            for (int i = p2.size() - 1; i >= 0; i--){
+              pathLks.push_back(* p2[i]);
+            }
+            if (IsPathSelfTangled(pathLks)) return false;
 
             printf("Bracing configuration found, duration: %d mins %g secs\n",
                   (int)floor(searchDuration / 60.0),
@@ -1238,17 +1043,35 @@ public:
 
             Mat decision_display = realtime_display.clone();
             // Draw the path
-            for(auto i : pathLks)
-              line(decision_display, cv_plot_coord(i.x, i.y),
-                  cv_plot_coord((i.x + (i.expansion * L + AA * 2) * cos(i.theta)),
-                                (i.y + (i.expansion * L + AA * 2) * sin(i.theta))),
-                  CV_RGB(0, 200, 0), LINE_THICKNESS * 2);
+            for(int i = 0; i < p.size(); i++){
+              line(decision_display,
+                cv_plot_coord(pathLks[i]),
+                cv_plot_coord(pathLks[i].getHead()),
+                CV_RGB(0, 200, 0), LINE_THICKNESS * 2);
+            }
+
+            clock_gettime(CLOCK_MONOTONIC, &finish_time);
+            searchDuration = (finish_time.tv_sec - start_time.tv_sec);
+            searchDuration += (finish_time.tv_nsec - start_time.tv_nsec) / 1000000000.0;
+            int h = (int)floor(searchDuration / 3600.0);
+            int m = (int)floor((searchDuration - h * 3600) / 60.0);
+            int s = (int)floor(searchDuration - h * 3600.0 - m * 60.0);
+            putText(decision_display,
+              "Bracing config finished. Search time: "
+                + (h != 0? to_string(h) + " h " : "")
+                + (m != 0? to_string(m) + " m " : "")
+                + to_string(s) + " s.",
+              CvPoint(10, decision_display.rows - 10 - 15),
+              FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(0, 0, 0), 1, CV_AA, false);
+            putText(decision_display,
+                "Press any key to continue",
+                CvPoint(10, decision_display.rows - 10),
+                FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(0, 0, 0), 1, CV_AA, false);
 
             paths.push_back(n);
             imshow("Display window", decision_display);
             // imwrite("outfiles/decision.png", decision_display);
-            printf("Got a valid path. n.theta = %g PI, sin(n.theta) = %g. Press any key to continue\n",
-                  n.theta / PI, sin(n.theta));
+            cout << GREEN << "Got a valid path. Click on 'Display window' then press any key to continue" << RESET << endl;
             cvWaitKey();
 
             return true;

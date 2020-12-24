@@ -37,6 +37,10 @@ public:
   int getHashBin (void) const {
       return (abs(x));
   }
+
+  double getDistance(const POINT & n) const {
+    return sqrt(pow(x - n.x, 2.0) + pow(y - n.y, 2.0));
+  }
 };
 
 class PointHash
