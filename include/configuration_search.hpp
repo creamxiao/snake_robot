@@ -747,13 +747,14 @@ public:
 	{
     LINK tn;
     bool display;
+    display = false;
     if (searchMode == 0){
       // force balance mode
 
       // successors
       for(double i = 0.0; i <= 1; i += ext_dist){//expanding length: 0, 0.5, 1.0
         for (int j = -2; j <= 2; j++){
-          display = false;
+
           //new position
           tn.x = n.getHeadX();
           tn.y = n.getHeadY();
@@ -850,7 +851,7 @@ public:
       vector<LINK> pathLks;
       for (int i = p.size() - 1; i >= 0; i--)
         pathLks.push_back(* p[i]);
-      if (display) pathLks.push_back(s->back()); // the new successor
+      if (display) pathLks.push_back(s->back());
 
       // Draw the path
       for(auto i : pathLks)
