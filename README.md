@@ -146,7 +146,9 @@ The image's credit to [**spmallick**](https://hub.docker.com/r/spmallick/opencv-
     sudo docker run -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -p 5000:5000 -p 8888:8888 -it spmallick/opencv-docker:opencv /bin/bash
     cd ~/
 ```
-**If successful, you are now in a Docker window. Follow [these steps](#installation-and-compilation-of-the-program) to install and run the program. Make sure you are doing it all in docker window.** To exit your docker window, type:
+**If successful, you are now in a Docker window. Follow [these steps](#installation-and-compilation-of-the-program) to install and run the program. Make sure you are doing it all in docker window.** 
+
+To exit your docker window, type:
 ```
     exit
 ```
