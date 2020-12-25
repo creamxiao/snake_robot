@@ -10,7 +10,11 @@ The installation instruction of library **qpOASES** is in the next section.
 
 ## Installation and Compilation of the program: ##
 ### Installation: ###
-Simply download the whole repository of `snake_robot` to your local directory. For reviewers' convenience, the third party library [DOSL](https://github.com/subh83/DOSL) and [qpOASES](https://github.com/coin-or/qpOASES) are included in this repository. Hereafter we refer to (the full path of) this directory by `<snake_robot-dir>`.
+Simply download the whole repository of `snake_robot` to your local directory and unzip it. Or you can clone the snake_robot repoitory by running:
+```
+    git clone https://github.com/creamxiao/snake_robot.git
+```
+For reviewers' convenience, the third party library [DOSL](https://github.com/subh83/DOSL) and [qpOASES](https://github.com/coin-or/qpOASES) are included in this repository. Hereafter we refer to (the full path of) this directory by `<snake_robot-dir>`.
 ### qpOASES: ###
 The following steps are extracted from [qpOASES manual](https://www.coin-or.org/qpOASES/doc/3.2/manual.pdf). You can chech out the manual for more details.
 1. Since you have downloaded the included **qpOASES**, go to the folder by running this in terminal:
@@ -129,6 +133,7 @@ opencv-data
     sudo docker pull spmallick/opencv-docker:opencv
 ```
 The image's credit to [**spmallick**](https://hub.docker.com/r/spmallick/opencv-docker).
+
 3. You may need to enable Docker to display (in case the display window doesn't show up when you are running the search program). Run
 ```
     sudo xhost +local:docker
@@ -138,7 +143,22 @@ The image's credit to [**spmallick**](https://hub.docker.com/r/spmallick/opencv-
     sudo docker run -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -p 5000:5000 -p 8888:8888 -it spmallick/opencv-docker:opencv /bin/bash
     cd ~/
 ```
-If successful, you are now in a Docker window. Follow [these steps](#installation-and-compilation-of-the-program) to run the program. To exit your docker window, type:
+If successful, you are now in a Docker window. Follow [these steps](#installation-and-compilation-of-the-program) to install and run the program. To exit your docker window, type:
 ```
     exit
 ```
+After exiting the docker window, to save your docker setup so you can access later, do the following:
+```
+    sudo docker commit CONTAINER_ID NAME_OF_DOCKER_IMAGE
+```
+![screenshot](https://www.learnopencv.com/wp-content/uploads/2018/09/commit-changes-to-docker-image.png)
+where **CONTAINER_ID** is the text following **root@** in your docker container. Also, note that Container ID will vary every time you use docker run to create a new container. **NAME_OF_DOCKER_IMAGE** is what you want it to be called.
+Then the next time you want to run the code, you just need to type:
+```
+    sudo docker run -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -p 5000:5000 -p 8888:8888 -it NAME_OF_DOCKER_IMAGE /bin/bash
+```
+and you should be able to go to:
+```
+cd ~/snake_robot
+```
+then execute the program without re-compiling.
