@@ -124,6 +124,7 @@ opencv-data
 [Go back to Prerequisites](#opencv)
 
 ## Run in Docker: ##
+The following steps are extracted from online contents. To learn more details, see [Install OpenCV Docker Image on Ubuntu, MacOS or Windows](https://www.learnopencv.com/install-opencv-docker-image-ubuntu-macos-windows/).
 1. Install Docker by running in terminal
 ```
     sudo apt-get install docker.io
@@ -138,6 +139,8 @@ The image's credit to [**spmallick**](https://hub.docker.com/r/spmallick/opencv-
 ```
     sudo xhost +local:docker
 ```
+[Reference here](https://forums.docker.com/t/start-a-gui-application-as-root-in-a-ubuntu-container/17069).
+
 4. Launch the image, run
 ```
     sudo docker run -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -p 5000:5000 -p 8888:8888 -it spmallick/opencv-docker:opencv /bin/bash
