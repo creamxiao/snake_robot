@@ -4,7 +4,7 @@ This program is only for the configuration search for Paper "A Search-based Conf
 ## Prerequisites: ##
 **Linux** environment, **OpenCV** and **qpOASES** libraries installed.
 ### OpenCV: ###
-This program runs on OpenCV 3.X. If you already have this version installed on you computer, congratulations. Otherwise, skip to [OpenCV installation instructions](#opencv-quick-installation). Remember to come back after you succeeded.
+This program runs on OpenCV 3.X. If you already have this version installed on you computer, congratulations. Otherwise, skip to [OpenCV installation instructions](#opencv-quick-installation) to install OpenCV. Remember to come back after you succeeded. If you wouldn't want to mess with your existing other version of OpenCV or you have trouble in installing OpenCV, you can try running it in Docker which provided an independent shell for the program to run. Click [run in Docker](#runindocker).
 
 The installation instruction of library **qpOASES** is in the next section.
 
@@ -118,3 +118,14 @@ opencv-data
 3. Click **apply**. Enjoy!
 
 [Go back to Prerequisites](#opencv)
+
+## Run in Docker: ##
+1. Install Docker by running
+```
+    sudo apt-get install docker.io
+```
+2. Download and install Docker image of OpenCV, run
+```
+    sudo docker pull spmallick/opencv-docker:opencv
+```
+The image's credit to [**spmallick**](https://hub.docker.com/r/spmallick/opencv-docker).
