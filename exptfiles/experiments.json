@@ -7,7 +7,77 @@
     goal:      [41, 29],
     angle_g:   1.75,
     mu:        0.3, // coefficient of static friction
-    ext_dist:  0.5 // if no result, try 0.25
+    ext_dist:  0.5 // if no result, try 0.25, but this may cost much longer time
+    },
+  '23b':
+    {
+    map_name:  "wall_simu_4x.png",
+    start:     [39, 20],
+    angle_s:   0.5,
+    goal:      [98, 20],
+    angle_g:   -0.5,
+    mu:        0.3, // coefficient of static friction
+    ext_dist:  0.5 // if no result, try 0.25, but this may cost much longer time
+    },
+  '23c':
+    {
+    map_name:  "wall_simu_4.png",
+    start:     [39, 111],
+    angle_s:   -0.5,
+    goal:      [98, 111],
+    angle_g:   0.5,
+    mu:        0.3, // coefficient of static friction
+    ext_dist:  0.5 // if no result, try 0.25, but this may cost much longer time
+    },
+  '23d':
+    {
+    map_name:  "wall_simu_5_1.png",
+    start:     [19, 34],
+    angle_s:   0.0,
+    goal:      [181, 101],
+    angle_g:   0.0,
+    mu:        0.3, // coefficient of static friction
+    ext_dist:  0.5 // if no result, try 0.25, but this may cost much longer time
+    },
+  '23e':
+    {
+    map_name:  "wall_simu_5_1.png",
+    start:     [19, 34],
+    angle_s:   0.0,
+    goal:      [181, 101],
+    angle_g:   0.25,
+    mu:        0.3, // coefficient of static friction
+    ext_dist:  0.5 // if no result, try 0.25, but this may cost much longer time
+    },
+  '23f':
+    {
+    map_name:  "wall_simu_5s.png",
+    start:     [150, 25],
+    angle_s:   0.5,
+    goal:      [33, 181],
+    angle_g:   0.5,
+    mu:        0.3, // coefficient of static friction
+    ext_dist:  0.5 // if no result, try 0.25, but this may cost much longer time
+    },
+  '23g':
+    {
+    map_name:  "wall_simu_triangular_mini.png",
+    start:     [150, 136],
+    angle_s:   1.0,
+    goal:      [107, 16],
+    angle_g:   1.5,
+    mu:        0.3, // coefficient of static friction
+    ext_dist:  0.5 // if no result, try 0.25, but this may cost much longer time
+    },
+  '23h':
+    {
+    map_name:  "wall_simu_Y.png",
+    start:     [109, 193],
+    angle_s:   -0.25,
+    goal:      [199, 31],
+    angle_g:   -0.5,
+    mu:        0.3, // coefficient of static friction
+    ext_dist:  0.5 // if no result, try 0.25, but this may cost much longer time
     },
   '26a':
     {
@@ -17,7 +87,7 @@
     goal:      [161, 111],
     angle_g:   0.125,
     mu:        0.3, // coefficient of static friction
-    ext_dist:  0.5 // if no result, try 0.25
+    ext_dist:  0.5 // if no result, try 0.25, but this may cost much longer time
     },
   '26b':
     {
@@ -27,7 +97,7 @@
     goal:      [161, 111],
     angle_g:   0.25,
     mu:        0.3, // coefficient of static friction
-    ext_dist:  0.5 // if no result, try 0.25
+    ext_dist:  0.5 // if no result, try 0.25, but this may cost much longer time
     },
   '26c':
     {
@@ -37,7 +107,7 @@
     goal:      [161, 111],
     angle_g:   0.375
     mu:        0.3, // coefficient of static friction
-    ext_dist:  0.5 // if no result, try 0.25
+    ext_dist:  0.5 // if no result, try 0.25, but this may cost much longer time
     },
   '26d':
     {
@@ -47,7 +117,7 @@
     goal:      [161, 111],
     angle_g:   0.5,
     mu:        0.3, // coefficient of static friction
-    ext_dist:  0.5 // if no result, try 0.25
+    ext_dist:  0.5 // if no result, try 0.25, but this may cost much longer time
     },
   '26e':
     {
@@ -57,7 +127,7 @@
     goal:      [161, 111],
     angle_g:   0.625,
     mu:        0.3, // coefficient of static friction
-    ext_dist:  0.5 // if no result, try 0.25
+    ext_dist:  0.5 // if no result, try 0.25, but this may cost much longer time
     },
   '26f':
     {
@@ -67,6 +137,6 @@
     goal:      [161, 111],
     angle_g:   0.75,
     mu:        0.3, // coefficient of static friction
-    ext_dist:  0.5 // if no result, try 0.25
+    ext_dist:  0.5 // if no result, try 0.25, but this may cost much longer time
     }
 }
