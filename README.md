@@ -10,11 +10,11 @@ The installation instruction of library **qpOASES** is in the next section.
 
 ## Installation and Compilation of the program: ##
 ### Installation: ###
-Simply download the whole repository of `snake_robot` to your local directory and unzip it. Or you can clone the snake_robot repoitory by running:
+Simply download the whole repository of `snake_robot` to your local directory and unzip it (make sure this local directory **has no space** in it, otherwise you would have problem in compiling the library **qpOASES**). Or you can clone the snake_robot repoitory by running:
 ```
     git clone https://github.com/creamxiao/snake_robot.git
 ```
- Make sure this local directory **has no space** in it, otherwise you would have problem in compiling library **qpOASES**. For reviewers' convenience, the third party library [DOSL](https://github.com/subh83/DOSL) and [qpOASES](https://github.com/coin-or/qpOASES) are included in this repository. Hereafter we refer to (the full path of) this directory by `<snake_robot-dir>`.
+For reviewers' convenience, the third party library [DOSL](https://github.com/subh83/DOSL) and [qpOASES](https://github.com/coin-or/qpOASES) are included in this repository. Hereafter we refer to (the full path of) this directory by `<snake_robot-dir>`.
 ### qpOASES: ###
 The following steps are extracted from [qpOASES manual](https://www.coin-or.org/qpOASES/doc/3.2/manual.pdf). You can chech out the manual for more details.
 1. Since you have downloaded the included **qpOASES**, go to the folder by running this in terminal:
