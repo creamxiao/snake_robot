@@ -692,7 +692,7 @@ int main(int argc, char *argv[])
     putText(start_canvas, imgFname, cvPoint(25, 830), 1, 1, CV_RGB(0, 0, 0), 1, 8, false);
 
 		sprintf(imgFname, "outfiles/animation/link_path_%d_%d_%d_screenshot_%d.png", 1900 + localtm->tm_year, 1 + localtm->tm_mon, localtm->tm_mday, T);
-		imwrite(imgFname, start_canvas);
+		// imwrite(imgFname, start_canvas);
 		imshow("Feed in animation", start_canvas);
 		cvWaitKey(1);
 		start_canvas.release();
@@ -748,7 +748,7 @@ int main(int argc, char *argv[])
     putText(start_canvas, imgFname, cvPoint(25, 830), 1, 1, CV_RGB(0, 0, 0), 1, 8, false);
 
 		sprintf(imgFname, "outfiles/animation/link_path_%d_%d_%d_screenshot_%d.png", 1900 + localtm->tm_year, 1 + localtm->tm_mon, localtm->tm_mday, T);
-		imwrite(imgFname, start_canvas);
+		// imwrite(imgFname, start_canvas);
 		imshow("Feed in animation", start_canvas);
 		cvWaitKey(1);
   }
@@ -850,7 +850,7 @@ int main(int argc, char *argv[])
     putText(start_canvas, imgFname, cvPoint(25, 830), 1, 1, CV_RGB(0, 0, 0), 1, 8, false);
 
     sprintf(imgFname, "outfiles/animation/link_path_%d_%d_%d_screenshot_%d.png", 1900 + localtm->tm_year, 1 + localtm->tm_mon, localtm->tm_mday, T);
-    imwrite(imgFname, start_canvas);
+    // imwrite(imgFname, start_canvas);
     imshow("Feed in animation", start_canvas);
     cvWaitKey(1);
   }
@@ -968,7 +968,7 @@ for(; !allShrunk; T++){
   putText(start_canvas, imgFname, cvPoint(25, 830), 1, 1, CV_RGB(0, 0, 0), 1, 8, false);
 
   sprintf(imgFname, "outfiles/animation/link_path_%d_%d_%d_screenshot_%d.png", 1900 + localtm->tm_year, 1 + localtm->tm_mon, localtm->tm_mday, T);
-  imwrite(imgFname, start_canvas);
+  // imwrite(imgFname, start_canvas);
   imshow("Feed in animation", start_canvas);
   cvWaitKey(1);
 }
@@ -1101,7 +1101,7 @@ for(; !allShrunk; T++){
     putText(start_canvas, imgFname, cvPoint(25, 830), 1, 1, CV_RGB(0, 0, 0), 1, 8, false);
 
     sprintf(imgFname, "outfiles/animation/link_path_%d_%d_%d_screenshot_%d.png", 1900 + localtm->tm_year, 1 + localtm->tm_mon, localtm->tm_mday, T);
-    imwrite(imgFname, start_canvas);
+    // imwrite(imgFname, start_canvas);
     imshow("Feed in animation", start_canvas);
     cvWaitKey(1);
   }
@@ -1152,7 +1152,7 @@ for(; !allShrunk; T++){
     putText(start_canvas, imgFname, cvPoint(25, 830), 1, 1, CV_RGB(0, 0, 0), 1, 8, false);
 
     sprintf(imgFname, "outfiles/animation/link_path_%d_%d_%d_screenshot_%d.png", 1900 + localtm->tm_year, 1 + localtm->tm_mon, localtm->tm_mday, T);
-    imwrite(imgFname, start_canvas);
+    // imwrite(imgFname, start_canvas);
     imshow("Feed in animation", start_canvas);
     cvWaitKey(1);
   }
@@ -1263,7 +1263,7 @@ for(; !allShrunk; T++){
     putText(start_canvas, imgFname, cvPoint(25, 830), 1, 1, CV_RGB(0, 0, 0), 1, 8, false);
 
 		sprintf(imgFname, "outfiles/animation/link_path_%d_%d_%d_screenshot_%d.png", 1900 + localtm->tm_year, 1 + localtm->tm_mon, localtm->tm_mday, T);
-		imwrite(imgFname, start_canvas);
+		// imwrite(imgFname, start_canvas);
 		imshow("Feed in animation", start_canvas);
     cvWaitKey(1);
   }
@@ -1316,7 +1316,7 @@ for(; !allShrunk; T++){
     putText(start_canvas, imgFname, cvPoint(25, 830), 1, 1, CV_RGB(0, 0, 0), 1, 8, false);
 
     sprintf(imgFname, "outfiles/animation/link_path_%d_%d_%d_screenshot_%d.png", 1900 + localtm->tm_year, 1 + localtm->tm_mon, localtm->tm_mday, T);
-    imwrite(imgFname, start_canvas);
+    // imwrite(imgFname, start_canvas);
     imshow("Feed in animation", start_canvas);
     cvWaitKey(1);
   }
